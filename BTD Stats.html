@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BTD6 Stats — Dev Reference</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --bd:#30363d; --bd2:#21262d;
+    --tx:#e6edf3; --tx2:#8b949e; --tx3:#6e7681;
+    --ac:#58a6ff; --ac2:#1f6feb;
+    --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+    --pri:#3fb950; --mil:#d29922; --mgc:#bc8cff; --sup:#58a6ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--tx);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45}
+  a{color:var(--ac);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1700px;margin:0 auto;padding:12px 16px 80px}
+  h1{font-size:18px;margin:0 0 2px;color:var(--tx);letter-spacing:.02em}
+  h2{font-size:13px;margin:16px 0 6px;color:var(--tx);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--bd2);padding-bottom:4px}
+  h3{font-size:12px;margin:10px 0 4px;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em}
+  .sub{color:var(--tx2);font-size:11px;margin-bottom:10px}
+  .tabs{display:flex;gap:2px;margin:10px 0 12px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+  .tab{padding:6px 14px;background:transparent;border:1px solid transparent;border-bottom:none;color:var(--tx2);cursor:pointer;font:inherit;border-radius:4px 4px 0 0}
+  .tab:hover{color:var(--tx)}
+  .tab.on{background:var(--bg2);color:var(--tx);border-color:var(--bd);position:relative;top:1px}
+  .panel{display:none}
+  .panel.on{display:block}
+  .controls{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .chip{padding:4px 10px;border-radius:12px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);cursor:pointer;font:inherit;font-size:11px}
+  .chip:hover{border-color:var(--tx3);color:var(--tx)}
+  .chip.on{background:var(--ac2);border-color:var(--ac);color:#fff}
+  .chip.pri.on{background:#0e4429;border-color:var(--pri);color:var(--pri)}
+  .chip.mil.on{background:#3d2a0d;border-color:var(--mil);color:var(--mil)}
+  .chip.mgc.on{background:#2d1d47;border-color:var(--mgc);color:var(--mgc)}
+  .chip.sup.on{background:#0d2d4e;border-color:var(--sup);color:var(--sup)}
+  input.search{flex:1;min-width:200px;background:var(--bg2);border:1px solid var(--bd);color:var(--tx);padding:5px 10px;border-radius:4px;font:inherit;font-size:12px}
+  input.search:focus{outline:none;border-color:var(--ac)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .card{background:var(--bg2);border:1px solid var(--bd2);border-radius:4px;padding:8px;cursor:pointer;transition:border-color .1s, background .1s;display:flex;gap:8px}
+  .card:hover{border-color:var(--tx3);background:var(--bg3)}
+  .card.sel{border-color:var(--ac);background:var(--bg3)}
+  .card .img{flex:0 0 44px;width:44px;height:44px;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .card .img img{width:100%;height:100%;object-fit:contain}
+  .card .body{flex:1;min-width:0}
+  .card .nm{font-size:12px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .tag{font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-top:1px}
+  .card .stat{font-size:10px;color:var(--tx2);margin-top:3px;display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
+  .card .stat b{color:var(--tx);font-weight:500}
+  .cat-pri{color:var(--pri)} .cat-mil{color:var(--mil)} .cat-mgc{color:var(--mgc)} .cat-sup{color:var(--sup)}
+
+  .detail{background:var(--bg2);border:1px solid var(--bd);border-radius:4px;padding:12px;margin-top:10px;display:none}
+  .detail.on{display:block}
+  .dhead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .dhead .dimg{width:72px;height:72px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 72px}
+  .dhead .dimg img{width:100%;height:100%;object-fit:contain}
+  .dhead h3{margin:0;font-size:16px;color:var(--tx);text-transform:none;letter-spacing:0}
+  .dhead .dmeta{font-size:11px;color:var(--tx2);margin-top:2px}
+  .close{margin-left:auto;background:none;border:1px solid var(--bd);color:var(--tx2);padding:4px 8px;cursor:pointer;border-radius:4px;font:inherit}
+  .close:hover{color:var(--tx);border-color:var(--tx3)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:12px}
+  .stat-cell{background:var(--bg3);border:1px solid var(--bd2);border-radius:3px;padding:6px 8px}
+  .stat-cell .l{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}
+  .stat-cell .v{font-size:14px;color:var(--tx);font-weight:500;margin-top:1px}
+  .diffgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--bg3);border:1px solid var(--bd2);border-radius:3px;padding:6px;margin-bottom:12px}
+  .diffgrid > div{text-align:center}
+  .diffgrid .dl{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em}
+  .diffgrid .dv{font-size:13px;color:var(--tx);font-weight:600;margin-top:2px}
+
+  /* paths – full detail */
+  .paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .path{background:var(--bg3);border:1px solid var(--bd2);border-radius:4px;padding:8px}
+  .path-h{font-size:11px;color:var(--tx);text-transform:uppercase;letter-spacing:.08em;padding:2px 4px 6px;border-bottom:1px solid var(--bd2);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+  .path-h .p-lab{font-weight:600}
+  .up{display:flex;gap:8px;padding:6px;border-radius:4px;border:1px solid var(--bd2);margin-bottom:4px;background:var(--bg2)}
+  .up:hover{border-color:var(--tx3)}
+  .up .uimg{flex:0 0 36px;width:36px;height:36px;background:var(--bg);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--bd2)}
+  .up .uimg img{width:100%;height:100%;object-fit:contain}
+  .up .ubody{flex:1;min-width:0}
+  .up .uhead{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:2px}
+  .up .un{font-size:12px;color:var(--tx);font-weight:600}
+  .up .utier{display:inline-block;font-size:9px;color:var(--bg);background:var(--warn);border-radius:3px;padding:1px 5px;margin-right:4px;font-weight:700;vertical-align:middle}
+  .up .ucosts{font-size:10px;color:var(--tx2);font-variant-numeric:tabular-nums;margin-top:1px}
+  .up .ucosts b{color:var(--warn);font-weight:600}
+  .up .ucosts .dlabel{color:var(--tx3);font-size:9px;text-transform:uppercase;letter-spacing:.05em;margin-right:3px}
+  .up .ueff{font-size:11px;color:var(--tx2);margin-top:4px;line-height:1.4}
+  .up .ueff b{color:var(--tx)}
+  .up .ueff .num{color:var(--warn);font-weight:500}
+
+  .notes{margin-top:10px;padding:8px;background:var(--bg3);border-left:3px solid var(--ac2);border-radius:0 3px 3px 0;font-size:11px;color:var(--tx2)}
+  .notes b{color:var(--tx)}
+  .imm{margin-top:4px;font-size:11px;color:var(--bad)}
+
+  table.d{width:100%;border-collapse:collapse;font-size:11px;background:var(--bg2);border:1px solid var(--bd);border-radius:4px;overflow:hidden}
+  table.d th, table.d td{border-bottom:1px solid var(--bd2);padding:5px 8px;text-align:left;vertical-align:middle}
+  table.d thead th{background:var(--bg3);color:var(--tx2);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.06em;position:sticky;top:0}
+  table.d tbody tr:hover{background:var(--bg3)}
+  table.d td.n{text-align:right;font-variant-numeric:tabular-nums}
+  table.d .bimg{width:32px;height:32px;background:var(--bg3);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;vertical-align:middle}
+  table.d .bimg img{width:100%;height:100%;object-fit:contain}
+  .pill{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-right:2px}
+  .pill.camo{background:#22272e;color:#ff7b72;border:1px solid #ff7b72}
+  .pill.regrow{background:#22272e;color:#3fb950;border:1px solid #3fb950}
+  .pill.fortified{background:#22272e;color:#d29922;border:1px solid #d29922}
+  .pill.lead{background:#22272e;color:#8b949e;border:1px solid #6e7681}
+  .pill.purple{background:#22272e;color:#bc8cff;border:1px solid #bc8cff}
+  .pill.moab{background:#1a2737;color:#58a6ff;border:1px solid #58a6ff}
+  .pill.yes{background:#0e4429;color:#3fb950;border:1px solid #3fb950}
+  .pill.no{background:#3f1519;color:#f85149;border:1px solid #f85149}
+
+  .matrix{overflow-x:auto;background:var(--bg2);border:1px solid var(--bd);border-radius:4px}
+  .matrix table{min-width:800px}
+
+  .mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+  .mcard{background:var(--bg2);border:1px solid var(--bd2);border-radius:4px;padding:10px}
+  .mcard h4{margin:0 0 4px;font-size:13px;color:var(--tx)}
+  .mcard .mtag{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}
+  .mcard .mrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;border-top:1px dashed var(--bd2)}
+  .mcard .mrow:first-of-type{border-top:none}
+  .mcard .mrow b{color:var(--tx)}
+  .mcard .mrow span{color:var(--tx2)}
+  .mcard .mdesc{font-size:11px;color:var(--tx2);margin-top:6px;padding-top:6px;border-top:1px solid var(--bd2);line-height:1.5}
+
+  .muted{color:var(--tx3)}
+  .foot{margin-top:20px;padding-top:10px;border-top:1px solid var(--bd2);color:var(--tx3);font-size:10px}
+  .kbd{display:inline-block;padding:1px 5px;border:1px solid var(--bd);border-radius:3px;background:var(--bg3);color:var(--tx2);font-size:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BTD6 Stats — Dev Reference</h1>
+  <div class="sub">Icons served from Fandom via <code>Special:FilePath/&lt;Name&gt;UpgradeIcon.png</code>. Data current to BTD6 v46+ (early 2026). Costs: Easy / Medium / Hard / Impoppable.</div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="towers">Towers</button>
+    <button class="tab" data-tab="bloons">Bloons &amp; MOABs</button>
+    <button class="tab" data-tab="props">Properties &amp; Immunities</button>
+    <button class="tab" data-tab="modes">Game Modes</button>
+    <button class="tab" data-tab="econ">Economy / Cash</button>
+  </div>
+
+  <div id="tab-towers" class="panel on">
+    <div class="controls">
+      <button class="chip on" data-cat="all">All</button>
+      <button class="chip pri" data-cat="Primary">Primary</button>
+      <button class="chip mil" data-cat="Military">Military</button>
+      <button class="chip mgc" data-cat="Magic">Magic</button>
+      <button class="chip sup" data-cat="Support">Support</button>
+      <input class="search" id="search" type="text" placeholder="Search towers or upgrades…  ( / )" />
+    </div>
+    <div class="grid" id="tower-grid"></div>
+    <div class="detail" id="detail">
+      <div class="dhead">
+        <div class="dimg" id="d-img"></div>
+        <div>
+          <h3 id="d-name"></h3>
+          <div class="dmeta" id="d-meta"></div>
+        </div>
+        <button class="close" id="close">&times; Close</button>
+      </div>
+      <h3>Base stats</h3>
+      <div class="stats" id="d-stats"></div>
+      <h3>Base cost (Easy / Medium / Hard / Impoppable)</h3>
+      <div class="diffgrid" id="d-diff"></div>
+      <h3>Upgrade paths</h3>
+      <div class="paths" id="d-paths"></div>
+      <div class="notes" id="d-notes"></div>
+    </div>
+  </div>
+
+  <div id="tab-bloons" class="panel">
+    <h2>Standard bloons</h2>
+    <div class="matrix"><table class="d" id="tbl-bloons"></table></div>
+    <h2>MOAB-class bloons</h2>
+    <div class="matrix"><table class="d" id="tbl-moabs"></table></div>
+    <h2>Boss bloons</h2>
+    <div class="matrix"><table class="d" id="tbl-boss"></table></div>
+  </div>
+
+  <div id="tab-props" class="panel">
+    <h2>Modifier properties</h2>
+    <div class="mg" id="prop-cards"></div>
+    <h2>Damage type vs bloon resistance matrix</h2>
+    <div class="matrix"><table class="d" id="tbl-resist"></table></div>
+  </div>
+
+  <div id="tab-modes" class="panel">
+    <h2>Difficulties &amp; modes</h2>
+    <div class="mg" id="mode-cards"></div>
+  </div>
+
+  <div id="tab-econ" class="panel">
+    <h2>Core income formulas</h2>
+    <div class="mg" id="econ-cards"></div>
+    <h2>Cash per round from bloons only (no farms)</h2>
+    <div class="sub">Gross $ from $1/pop scaled by round-reduction tiers. Round-end bonus of $(100+n) applies on top.</div>
+    <div class="matrix"><table class="d" id="tbl-rounds"></table></div>
+    <h2>Mode cash modifier matrix</h2>
+    <div class="matrix"><table class="d" id="tbl-modecash"></table></div>
+  </div>
+
+  <div class="foot">
+    Source: bloons.fandom.com/wiki/ + bloonswiki.com. Icons via <code>Special:FilePath</code>; broken images fall back to an initials tile. <span class="kbd">/</span> focus search, <span class="kbd">Esc</span> close detail.
+  </div>
+</div>
+
+<script>
+/* ================== ICON HELPERS ================== */
+// Fandom canonical name: strip non-alphanumerics, append UpgradeIcon.png
+// e.g. "Crossbow Master" -> "CrossbowMasterUpgradeIcon.png"
+// e.g. "Spike-o-Pult"    -> "SpikeoPultUpgradeIcon.png"  (may vary; override with explicit img)
+const FANDOM = "https://bloons.fandom.com/wiki/Special:FilePath/";
+function upgradeIconFile(name, override){
+  if(override) return override;
+  return name.replace(/[^A-Za-z0-9]/g,'') + 'UpgradeIcon.png';
+}
+function imgUrl(f){ return f ? FANDOM + encodeURIComponent(f) : ""; }
+function imgTag(file, alt="", initials=null){
+  const ini = initials || alt.replace(/[^A-Za-z0-9 ]/g,'').split(/\s+/).map(w=>w[0]).join('').substring(0,3).toUpperCase();
+  if(!file) return `<span class="muted" style="font-size:10px">${ini}</span>`;
+  return `<img src="${imgUrl(file)}" alt="${alt.replace(/"/g,'&quot;')}" referrerpolicy="no-referrer" loading="lazy" onerror="this.outerHTML='<span style=\\'font-size:10px;color:var(--tx3);font-weight:600\\'>${ini}</span>'"/>`;
+}
+
+/* ================== TOWERS ================== */
+// Each upgrade: n = name, c = medium cost, d = full effect text. img optional override.
+// All 4 diff costs computed as Easy=×0.85, Med=×1.00, Hard=×1.08, Imp=×1.20, rounded to nearest 5.
+const TOWERS = [
+
+/* ========== 1. DART MONKEY ========== */
+{ name:"Dart Monkey", cat:"Primary", portrait:"Dart_Monkey.png", cost:200, dmg:1, pierce:2, range:32, atk:0.95, projSpd:"330 u/s", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Default tower. Throws one sharp dart per attack. Excellent for early game. Crossbow Master (5-0-2) is one of the highest single-target T5 DPS sources; Plasma Fan Club (0-5-0) temporarily transforms all nearby Darts; Ultra-Juggernaut (5-0-0) is strong line-of-sight MOAB damage. Cannot pop Lead or Frozen without upgrades.",
+  imm:[],
+  paths:[[
+    {n:"Sharp Shots",    c:140,  d:"<b>Pierce</b> <span class='num'>2→3</span>. Darts pop 1 more bloon before disappearing."},
+    {n:"Razor Sharp Shots",c:265,d:"<b>Pierce</b> <span class='num'>3→6</span>. Darts pop 3 more bloons."},
+    {n:"Spike-o-Pult",   c:365,  d:"Replaces darts with large spiked balls. <b>Damage</b> <span class='num'>1→2</span>, <b>pierce</b> <span class='num'>6→21</span>, but attack cooldown increased to <span class='num'>1.65s</span>. Still cannot pop Lead/Frozen."},
+    {n:"Juggernaut",     c:1800, d:"Huge spiked ball. <b>Damage</b> <span class='num'>2→4</span>, <b>pierce</b> <span class='num'>21→30</span>, pops Lead & Frozen. Ball slowly seeks nearby bloons. <span class='num'>+2 dmg</span> to Ceramic and MOAB-class."},
+    {n:"Ultra-Juggernaut",c:15000,d:"Massive spiked ball. <b>Damage</b> <span class='num'>4→7</span>, <b>pierce</b> <span class='num'>30→70</span>. On hit, releases 6 mini-Juggernauts (each <span class='num'>3 dmg, 10 pierce</span>) that ricochet. <span class='num'>+8 dmg</span> to MOAB."}
+  ],[
+    {n:"Quick Shots",    c:100,  d:"<b>Attack speed +15%</b>. Attack cooldown <span class='num'>0.95s → 0.826s</span>."},
+    {n:"Very Quick Shots",c:190, d:"<b>Attack speed +39%</b> total. Cooldown <span class='num'>0.826s → 0.685s</span>."},
+    {n:"Triple Shot",    c:425,  d:"Fires <b>3 darts</b> in a spread instead of 1. Total projectile output tripled; each dart still 1 dmg 3 pierce."},
+    {n:"Super Monkey Fan Club",c:9000,d:"Ability (45s CD, 15s): Up to <b>10 nearby Dart Monkeys temporarily become Super Monkeys</b> firing 1 dmg darts at extreme speed (1/0.04s). Cannot pop Lead."},
+    {n:"Plasma Monkey Fan Club",c:40000,d:"Ability (45s CD, 15s): Up to <b>10 nearby Dart Monkeys become Plasma Monkeys</b> firing 3 dmg plasma darts (pops Lead & Frozen, not Purple). Base shot now becomes plasma (2 dmg, pops Lead)."}
+  ],[
+    {n:"Long Range Darts",c:90,  d:"<b>Range +8</b> (32→40). Projectile travel distance also extended. Ideal when tower is placed far from track."},
+    {n:"Enhanced Eyesight",c:200, d:"<b>Range +6</b> more (40→46). Grants <b>Camo detection</b>. Ceramic Prioritization targeting option unlocked. No longer needs a Village for camo."},
+    {n:"Crossbow",       c:625,  d:"Replaces darts with a crossbow bolt. <b>Damage</b> <span class='num'>1→2</span>, <b>pierce</b> <span class='num'>2→4</span>, <b>+range</b>, slightly slower attack. Still cannot pop Lead."},
+    {n:"Sharpshooter",   c:3400, d:"Crit shots: 1-in-9 bolts deal <span class='num'>+15 damage</span>. Normal shot becomes <b>3 dmg / 4 pierce</b>. Pops Lead and Frozen."},
+    {n:"Crossbow Master",c:22000,d:"Extreme fire rate (cooldown ~0.15s), <b>damage 6</b>, <b>pierce 10</b>. Every 9th shot crits for <span class='num'>+60 dmg</span>. Pops all bloon types including Lead and Ceramic inner layers. Highest single-target DPS per cost among T5s."}
+  ]]
+},
+
+/* ========== 2. BOOMERANG MONKEY ========== */
+{ name:"Boomerang Monkey", cat:"Primary", portrait:"Boomerang_Monkey.png", cost:325, dmg:1, pierce:4, range:43, atk:1.2, projSpd:"curve (280 u/s)", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Throws boomerangs that curve and return, hitting bloons twice. Glaive Lord (5-0-0) creates a permanent orbiting glaive ring; MOAB Domination (0-0-5) is the single highest per-hit MOAB damage in the game; Perma Charge (0-5-0) gives permanent ~3× attack speed with +MOAB damage.",
+  imm:[],
+  paths:[[
+    {n:"Improved Rangs",  c:200, d:"<b>Pierce +3</b> (4→7). Boomerangs pop more bloons per pass."},
+    {n:"Glaives",         c:325, d:"Replaces boomerangs with glaives. <b>+1 damage</b>, <b>+2 pierce</b> (7→9). Projectile speed slightly faster."},
+    {n:"Glaive Ricochet", c:1400,d:"Glaives ricochet between bloons up to <b>6 times</b>. Each bounce consumes pierce. Massive grouped-bloon clearing."},
+    {n:"MOAR Glaives",    c:2100,d:"Ricochet <b>12 times</b> per glaive, <b>+1 damage</b>, <b>+pierce</b>. Dramatically improved AoE clear."},
+    {n:"Glaive Lord",     c:27000,d:"Three glaives <b>permanently orbit</b> the tower, shredding anything in range (<b>4 dmg</b> per hit, high pierce, constant contact). Throw attack also improved. Top T5 grouped DPS."}
+  ],[
+    {n:"Faster Throwing", c:250, d:"<b>Attack speed +15%</b>. Cooldown <span class='num'>1.2s → 1.04s</span>."},
+    {n:"Faster Rangs",    c:400, d:"<b>Projectile speed +66%</b>. Boomerangs travel / return faster, reduces miss rate on curves."},
+    {n:"Bionic Boomerang",c:1225,d:"<b>Attack speed +50% more</b>, <b>+2 pierce</b>. Strongly ramps DPS for mid-game."},
+    {n:"Turbo Charge",    c:4500,d:"Ability (30s CD, 7s): <b>Triple attack speed</b> for 7 seconds. Lets Bionic Boomerang burst down MOABs."},
+    {n:"Perma Charge",    c:25000,d:"Permanently in Turbo Charge mode — <b>3× base attack speed at all times</b>. <b>+40 damage</b> to MOAB-class only. Highest Boomerang T5 for sustained MOAB DPS."}
+  ],[
+    {n:"Long Range Rangs",c:100, d:"<b>Range +8</b> (43→51)."},
+    {n:"Red Hot Rangs",   c:300, d:"Pops <b>Lead and Frozen</b>. <b>+1 damage to Ceramics</b> via Fire damage. Deals 'Fire' damage type (ineffective vs Purple)."},
+    {n:"Kylie Boomerang", c:2400,d:"Boomerangs orbit the tower before returning, hitting many more times. <b>+pierce</b>. Path changes from crescent to long ellipse."},
+    {n:"MOAB Press",      c:3800,d:"Boomerangs physically <b>knock MOAB-class back</b> and deal <b>+50 damage</b> vs MOAB-class. One of the cheapest MOAB stalls in the game."},
+    {n:"MOAB Domination", c:60000,d:"Boomerangs deal <b>+900 damage</b> to each MOAB-class on hit (Kylie orbit stacks this!). Can delete ZOMGs in a single orbit pass. Highest per-hit MOAB bonus in the entire game."}
+  ]]
+},
+
+/* ========== 3. BOMB SHOOTER ========== */
+{ name:"Bomb Shooter", cat:"Primary", portrait:"Bomb_Shooter.png", cost:525, dmg:1, pierce:14, range:40, atk:1.5, projSpd:"lob (180 u/s)", camo:false, lead:true, black:false, purple:false, moab:true, footprint:"Land",
+  notes:"Lobs explosive bombs with AoE. Naturally pops Lead. Explosive damage CANNOT pop Black, Zebra, DDT, or Purple without support. Bloon Crush (5-0-0) stuns MOAB-class for extended duration; MOAB Eliminator (0-5-0) 2000 dmg burst; Bomb Blitz (0-0-5) clears everything with cluster storms.",
+  imm:["Black","Zebra","DDT","Purple"],
+  paths:[[
+    {n:"Bigger Bombs",     c:350, d:"<b>+1 damage</b> (1→2), <b>+20% blast radius</b>. Stronger baseline explosion."},
+    {n:"Heavy Bombs",      c:700, d:"<b>+1 damage</b> (2→3), <b>+1 dmg to Ceramics</b>, <b>+1 dmg to MOAB-class</b>."},
+    {n:"Really Big Bombs", c:2400,d:"Massive blast radius (<span class='num'>+54%</span>), <b>+pierce</b> (14→40). Covers huge track sections."},
+    {n:"Bloon Impact",     c:3800,d:"Stuns all bloons for <span class='num'>1.2s</span> on hit; stuns MOAB-class briefly. Best AoE soft-stall in its price tier."},
+    {n:"Bloon Crush",      c:50000,d:"Stuns <b>MOAB-class for ~2.1s</b> (including BAD via MIB assistance). <span class='num'>+1200 dmg</span> to MOAB-class. Massive pierce. Crushes Fortified BADs."}
+  ],[
+    {n:"Faster Reload",    c:350, d:"<b>Attack speed +22%</b>. Cooldown <span class='num'>1.5s → 1.23s</span>."},
+    {n:"Missile Launcher", c:700, d:"<b>Projectile speed +50%</b>, <b>+range</b>. Bombs reach targets quicker — crucial vs Ceramic rushes."},
+    {n:"MOAB Mauler",      c:900, d:"<b>+18 damage to MOAB-class</b>. Nothing else changes. Massively improves MOAB-killing efficiency."},
+    {n:"MOAB Assassin",    c:3400,d:"Ability (30s CD): deals <b>750 damage</b> to strongest MOAB in range. Base attack also <span class='num'>+35 vs MOAB</span>."},
+    {n:"MOAB Eliminator",  c:45000,d:"Ability reduced to <b>5s cooldown</b>, deals <b>2000 damage</b> to strongest MOAB. Base attack <b>+80 vs MOAB</b>. Top dedicated MOAB killer."}
+  ],[
+    {n:"Extra Range",      c:250, d:"<b>Range +8</b> (40→48). Lob reach increased accordingly."},
+    {n:"Frag Bombs",       c:300, d:"On explosion, bombs fire <b>8 sharp fragments</b> that damage nearby bloons. Frags can pop Black/Zebra (sharp damage type bypass)."},
+    {n:"Cluster Bombs",    c:850, d:"<b>+fragments (8→16)</b>, <b>+pierce</b>, fragments travel further. Major AoE upgrade vs grouped rounds."},
+    {n:"Recursive Cluster",c:3200,d:"Fragments <b>explode again</b> into smaller frags. Turns one bomb into a cascade of explosions — devastating vs Ceramic swarms."},
+    {n:"Bomb Blitz",       c:40000,d:"Ability (60s CD, 3s): <b>Infinite bombs + cluster storm</b>, completely clearing track. On cooldown reset by MOAB pops (stacks rapidly). Permanent blitz-level base DPS."}
+  ]]
+},
+
+/* ========== 4. TACK SHOOTER ========== */
+{ name:"Tack Shooter", cat:"Primary", portrait:"Tack_Shooter.png", cost:280, dmg:1, pierce:1, range:23, atk:1.4, projSpd:"150 u/s", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Fires 8 tacks radially in a ring. Very short range. Best at tight curves where track crosses itself. Inferno Ring (5-0-0) drops 700-damage meteors; Super Maelstrom (0-5-0) full-screen ability; Tack Zone (0-0-5) extreme radial DPS.",
+  imm:["Lead (without upgrades)","Frozen (without upgrades)"],
+  paths:[[
+    {n:"Faster Shooting",   c:180, d:"<b>Attack speed +50%</b>. Cooldown <span class='num'>1.4s → 0.93s</span>."},
+    {n:"Even Faster Shooting",c:330,d:"<b>+40% more attack speed</b> total. Cooldown <span class='num'>0.93s → 0.66s</span>."},
+    {n:"Hot Shots",         c:550, d:"Tacks become <b>Fire damage</b>: pops Lead and Frozen, <b>+1 dmg to Ceramic</b>. Cannot pop Purple."},
+    {n:"Ring of Fire",      c:3500,d:"Fires a <b>continuous ring of fire</b> instead of tacks. <b>3 damage</b>, <b>high pierce</b>, always-on AoE. Excellent corner/curve tower."},
+    {n:"Inferno Ring",      c:45000,d:"Ring fires faster; every 6s drops a <b>700-damage meteor</b> with huge blast radius. Meteor stuns MOAB-class. Global-class AoE threat."}
+  ],[
+    {n:"Long Range Tacks",  c:100, d:"<b>Range +3</b> (23→26). Tacks travel further too."},
+    {n:"Super Range Tacks", c:200, d:"<b>Range +3</b> more (26→29). Tack travel distance further increased."},
+    {n:"Blade Shooter",     c:500, d:"Replaces tacks with blades. <b>+1 damage</b> (1→2), <b>+1 pierce</b> (1→2), faster projectiles."},
+    {n:"Blade Maelstrom",   c:3000,d:"Ability (30s CD, 3s): spins wildly, firing <b>40 blades per attack for 3 seconds</b>. Massive burst AoE."},
+    {n:"Super Maelstrom",   c:40000,d:"Ability duration doubled, fires 60 blades per attack at 3× rate. Permanent passive: <b>2× blade output</b>, <b>+pierce</b>. Top burst AoE tower."}
+  ],[
+    {n:"More Tacks",        c:100, d:"Fires <b>10 tacks</b> per attack instead of 8."},
+    {n:"Even More Tacks",   c:200, d:"Fires <b>12 tacks</b> per attack."},
+    {n:"Tack Sprayer",      c:750, d:"Fires <b>16 tacks</b> at faster rate. Pierce increased."},
+    {n:"Overdrive",         c:3500,d:"<b>Insane fire rate</b> (cooldown ~0.25s), <b>+1 damage</b>. Continuous tack barrage from a single tower."},
+    {n:"The Tack Zone",     c:25000,d:"Fires <b>32 blades</b> per attack at extreme rate. <b>+2 damage</b>. Creates a dead zone — nothing survives close contact."}
+  ]]
+},
+
+/* ========== 5. ICE MONKEY ========== */
+{ name:"Ice Monkey", cat:"Primary", portrait:"Ice_Monkey.png", cost:300, dmg:0, pierce:40, range:25, atk:3.0, projSpd:"instant AoE", camo:false, lead:false, black:false, purple:false, moab:false, footprint:"Land",
+  notes:"Freezes bloons in a circular burst around the tower. Base attack does NO damage, only freezes. Cannot target White, Zebra, Lead, Purple, or Frozen bloons without upgrades. Super Brittle (4-0-2) makes frozen bloons take 4× damage — strongest damage amp in the game. Absolute Zero (0-5-0) freezes MOABs.",
+  imm:["White","Zebra","Lead","Purple","Frozen","MOAB-class (base)"],
+  paths:[[
+    {n:"Permafrost",        c:100, d:"Bloons that were frozen remain <b>slowed (50% speed)</b> for 5s after thawing. Huge QoL upgrade on short-range tower."},
+    {n:"Metal Freeze",      c:400, d:"Can now <b>freeze Lead bloons</b>. Damages Lead (<span class='num'>1 dmg</span>)."},
+    {n:"Ice Shards",        c:1800,d:"Frozen bloons <b>release sharp ice shards</b> when thawed or popped (8 shards, 1 dmg, pops Lead/Frozen)."},
+    {n:"Embrittlement",     c:4500,d:"Frozen bloons <b>take +1 damage from all sources</b> and <b>lose all immunities</b>. Covers Whites, Zebras, Purples, Leads — all become poppable by anything while frozen."},
+    {n:"Super Brittle",     c:40000,d:"Frozen bloons take <b>×4 damage from all sources</b> (stacks with Embrittlement). MOAB-class also gains ×4 damage taken when affected. The single strongest damage amplifier in BTD6."}
+  ],[
+    {n:"Enhanced Freeze",   c:100, d:"<b>Freeze duration +0.6s</b> (base 1.5s → 2.1s). Slow longer post-thaw."},
+    {n:"Deep Freeze",       c:250, d:"Attack now <b>freezes adjacent bloons</b> (extra chain). Can freeze bloons in tight groups."},
+    {n:"Arctic Wind",       c:2000,d:"Constant 35% slow <b>aura</b> around tower — doesn't need to attack. Also <b>freezes water surface</b> (land placements near water become valid for some units)."},
+    {n:"Snowstorm",         c:4500,d:"Ability (60s CD): <b>freezes ALL bloons on screen</b> for 5 seconds (not MOABs)."},
+    {n:"Absolute Zero",     c:25000,d:"Ability now freezes <b>MOAB-class too</b>. Permanent Arctic-Wind-like aura slows MOABs 25%. Global crowd control."}
+  ],[
+    {n:"Larger Radius",     c:150, d:"<b>Attack radius +4</b> (25→29). Covers more track per freeze."},
+    {n:"Re-Freeze",         c:200, d:"Attack cooldown reduced; can <b>re-freeze thawed bloons immediately</b>. <span class='num'>3.0s → 2.25s</span>."},
+    {n:"Cryo Cannon",       c:2500,d:"Launches a <b>freezing projectile</b> beyond normal range (up to ~60 units), 2 dmg, 40 pierce, freezes on impact."},
+    {n:"Icicle Impale",     c:5000,d:"Fires <b>icicles that impale MOAB-class</b> for <b>50 DoT damage</b> over 5s per icicle. Stacks. High MOAB pressure."},
+    {n:"Icicles",           c:32000,d:"Icicle barrage becomes <b>rapid-fire</b> (~1/0.2s), each icicle 10 dmg + slow. Base freeze unchanged. Top single-target MOAB DPS for Ice line."}
+  ]]
+},
+
+/* ========== 6. GLUE GUNNER ========== */
+{ name:"Glue Gunner", cat:"Primary", portrait:"Glue_Gunner.png", cost:275, dmg:0, pierce:1, range:46, atk:1.3, projSpd:"fast (200 u/s)", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Slows bloons with glue (50% slow, lasts 7s). Cannot POP anything without upgrades. The Bloon Solver (5-0-0) becomes a high-DPS acid sprayer; Super Glue (0-0-5) stops MOABs; Glue Storm (0-5-0) covers entire track.",
+  imm:["Cannot pop (support slow only at base)"],
+  paths:[[
+    {n:"Glue Soak",         c:200, d:"Glue <b>soaks through 2 bloon layers</b> — still affects bloons after outer pop."},
+    {n:"Corrosive Glue",    c:350, d:"Glue deals <b>1 damage/sec DoT</b> while applied."},
+    {n:"Bloon Dissolver",   c:2000,d:"<b>+1 DoT (2 dmg/sec)</b>, pops Lead, strips Regrow. Glue lasts longer."},
+    {n:"Bloon Liquefier",   c:4500,d:"DoT <b>+10 dmg/sec total</b>, affects <b>all bloon types including Ceramic</b>. Bloons dissolve very quickly."},
+    {n:"The Bloon Solver",  c:22000,d:"Fires rapid <b>acid splats instead of glue</b>. Huge AoE, <b>15 dmg/sec DoT</b>, fast attack (<span class='num'>~0.1s</span>). Best Glue line pure DPS."}
+  ],[
+    {n:"Bigger Globs",      c:250, d:"<b>Pierce +3</b> (1→4). Each glob can stick to multiple bloons."},
+    {n:"Glue Splatter",     c:1400,d:"On impact, glue <b>hits 6 nearby bloons</b>. Massive pierce increase."},
+    {n:"Glue Hose",         c:4200,d:"Continuous <b>rapid-fire glue stream</b>. Cooldown reduced dramatically."},
+    {n:"Glue Strike",       c:3500,d:"Ability (40s CD): <b>Glues every bloon on track</b> with Corrosive glue, 10s duration."},
+    {n:"Glue Storm",        c:22000,d:"Ability upgraded: <b>Constant glue rain over entire track</b> for 15s. Applies Corrosive DoT + slow globally."}
+  ]],
+  // note: Glue has 3 paths; I repeat 3rd below as proper path
+},
+
+/* ========== 6b. GLUE PATH 3 (fixer: Glue was above; rebuild with 3 paths) — will patch structure below via merge ========== */
+];
+
+// Fix Glue Gunner to have 3 paths (the object literal above only had 2 entries in paths array due to my edit oversight).
+// Patch correct Glue Gunner entry here:
+TOWERS.splice(TOWERS.findIndex(t=>t.name==="Glue Gunner"),1,
+{ name:"Glue Gunner", cat:"Primary", portrait:"Glue_Gunner.png", cost:275, dmg:0, pierce:1, range:46, atk:1.3, projSpd:"fast (200 u/s)", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Slows bloons with glue (50% slow, lasts 7s). Cannot POP anything without upgrades. The Bloon Solver (5-0-0) becomes a high-DPS acid sprayer; Super Glue (0-0-5) stops MOABs; Glue Storm (0-5-0) covers entire track.",
+  imm:["Cannot pop (support slow only at base)"],
+  paths:[[
+    {n:"Glue Soak",        c:200, d:"Glue <b>soaks through 2 bloon layers</b> — still affects bloons after outer pop."},
+    {n:"Corrosive Glue",   c:350, d:"Glue deals <b>1 damage/sec DoT</b> while applied."},
+    {n:"Bloon Dissolver",  c:2000,d:"<b>+1 DoT (2 dmg/sec)</b>, pops Lead, strips Regrow. Glue lasts longer."},
+    {n:"Bloon Liquefier",  c:4500,d:"DoT <b>+10 dmg/sec total</b>, affects <b>all bloon types including Ceramic</b>. Bloons dissolve very quickly."},
+    {n:"The Bloon Solver", c:22000,d:"Fires rapid <b>acid splats instead of glue</b>. Huge AoE, <b>15 dmg/sec DoT</b>, fast attack (<span class='num'>~0.1s</span>). Best Glue line pure DPS."}
+  ],[
+    {n:"Bigger Globs",     c:250, d:"<b>Pierce +3</b> (1→4). Each glob can stick to multiple bloons."},
+    {n:"Glue Splatter",    c:1400,d:"On impact, glue <b>hits 6 nearby bloons</b>. Massive pierce increase."},
+    {n:"Glue Hose",        c:4200,d:"Continuous <b>rapid-fire glue stream</b>. Cooldown reduced dramatically."},
+    {n:"Glue Strike",      c:3500,d:"Ability (40s CD): <b>Glues every bloon on track</b> with Corrosive glue, 10s duration."},
+    {n:"Glue Storm",       c:22000,d:"Ability upgraded: <b>Constant glue rain over entire track</b> for 15s. Applies Corrosive DoT + slow globally."}
+  ],[
+    {n:"Stickier Glue",    c:150, d:"Glue lasts <b>2× longer</b> (7s→14s)."},
+    {n:"Stronger Glue",    c:300, d:"Glue slows <b>70% instead of 50%</b>. Significant throughput boost."},
+    {n:"MOAB Glue",        c:3000,d:"Can slow <b>MOAB-class (50%)</b>. One of the cheapest MOAB slowers."},
+    {n:"Relentless Glue",  c:3500,d:"Glue <b>auto-re-applies up to 3 times</b> as it wears off. Slow increases to 80%."},
+    {n:"Super Glue",       c:26000,d:"<b>Completely stops non-MOAB bloons</b> in place for duration. MOAB-class fully stopped for 10s per application. Ultimate stall tool."}
+  ]]
+});
+
+/* ========== 7. SNIPER MONKEY ========== */
+TOWERS.push(
+{ name:"Sniper Monkey", cat:"Military", portrait:"Sniper_Monkey.png", cost:350, dmg:2, pierce:1, range:"global", atk:1.59, projSpd:"hitscan", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Global range, hitscan. Targets strongest by default. Cripple MOAB (5-0-0) stuns any MOAB including BAD. Elite Sniper (0-5-0) syncs all Snipers + $1200/ability. Elite Defender (0-0-5) scales attack speed with bloon count.",
+  imm:[],
+  paths:[[
+    {n:"Full Metal Jacket", c:300, d:"<b>Pops Lead and Frozen</b>, <b>+1 damage to Ceramic</b>. Standard early Sniper upgrade."},
+    {n:"Large Calibre",     c:3500,d:"<b>+1 damage</b> (3→4), <b>+9 damage to MOAB-class</b>."},
+    {n:"Deadly Precision",  c:4200,d:"<b>+4 damage</b> (4→7), <b>+9 more MOAB dmg</b>. Crits are common."},
+    {n:"Maim MOAB",         c:11000,d:"Stuns a MOAB-class bloon for <b>3 seconds</b> on hit. +damage. Amazing cost-efficient stall."},
+    {n:"Cripple MOAB",      c:42000,d:"Stuns any MOAB-class (including <b>BAD</b>) for <b>4s</b>; deals <b>+150 dmg</b>. Slows target bloon afterward. Top single-target MOAB lockdown."}
+  ],[
+    {n:"Night Vision Goggles",c:300,d:"<b>Camo detection</b>. Sniper can now target Camo bloons."},
+    {n:"Shrapnel Shot",     c:500, d:"On pop: fires <b>8 sharp fragments</b> in all directions from the impact point."},
+    {n:"Bouncing Bullet",   c:2500,d:"Bullets bounce <b>up to 8 times</b> between bloons. <b>+1 damage</b>."},
+    {n:"Supply Drop",       c:6500,d:"Ability (60s CD): drops a cash crate worth <b>$1200</b>. Requires open land to collect."},
+    {n:"Elite Sniper",      c:22000,d:"All Snipers fire <b>in sync</b> with this Sniper. Supply Drop cooldown −20s, crate worth <b>$1600</b>. <b>+1 damage</b>, <b>+attack speed</b>."}
+  ],[
+    {n:"Fast Firing",       c:300, d:"<b>Attack speed +33%</b>. Cooldown <span class='num'>1.59s → 1.2s</span>."},
+    {n:"Even Faster Firing",c:650, d:"<b>Attack speed +50% more</b>. Cooldown <span class='num'>1.2s → 0.8s</span>."},
+    {n:"Semi-Automatic",    c:3500,d:"Bursts of rapid fire — <b>attack speed doubled</b> when triggered."},
+    {n:"Full Auto Rifle",   c:7500,d:"Continuous automatic fire. Cooldown <span class='num'>~0.1s</span>."},
+    {n:"Elite Defender",    c:22500,d:"Attack speed <b>scales with bloon count on screen</b>, up to 10× base speed. With many bloons, clears rounds instantly."}
+  ]]
+});
+
+/* ========== 8. MONKEY SUB ========== */
+TOWERS.push(
+{ name:"Monkey Sub", cat:"Military", portrait:"Monkey_Sub.png", cost:325, dmg:1, pierce:3, range:42, atk:0.6, projSpd:"fast", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Water",
+  notes:"Water only. Pre-Emptive Strike (0-5-0) launches missiles at MOAB spawns before they hit the track. Energizer (5-0-0) halves ability cooldowns globally. Sub Commander (0-0-5) buffs every other sub: +1 dmg, +pierce.",
+  imm:["Requires water placement"],
+  paths:[[
+    {n:"Longer Range",      c:150, d:"<b>Range +12</b> (42→54)."},
+    {n:"Advanced Intel",    c:700, d:"Targets <b>any bloon on screen</b> that another tower can detect. <b>+range</b>."},
+    {n:"Submerge and Support",c:1200,d:"Submerges underwater: <b>buffs nearby towers +15% attack speed</b>. While submerged, doesn't attack."},
+    {n:"Bloontonium Reactor",c:6500,d:"Submerge aura <b>damages bloons in range</b> (<span class='num'>4 dmg/sec</span>). Buff and damage simultaneously."},
+    {n:"Energizer",         c:38000,d:"Reduces <b>ALL ability cooldowns by 50%</b> globally. Stacks multiplicatively with Energy Drink perk. Extreme late-game impact."}
+  ],[
+    {n:"Barbed Darts",      c:350, d:"<b>Pierce +2</b> (3→5)."},
+    {n:"Heat-tipped Darts", c:500, d:"Pops <b>Lead and Frozen</b>. Fire damage."},
+    {n:"Ballistic Missile", c:2700,d:"Fires <b>splash missiles</b>. Huge pierce, <b>+2 damage</b>, <b>+30 damage to MOAB</b>."},
+    {n:"First Strike Capability",c:16000,d:"Ability (40s CD): <b>10,000 damage</b> to strongest MOAB-class bloon on map."},
+    {n:"Pre-Emptive Strike",c:32000,d:"Automatically fires First Strike missiles at <b>every new MOAB-class spawn</b>. Strongest MOAB deletion in the game for its cost."}
+  ],[
+    {n:"Twin Guns",         c:400, d:"Fires <b>2 darts</b> simultaneously."},
+    {n:"Airburst Darts",    c:650, d:"Darts <b>split into 3</b> on impact. Significant pierce increase."},
+    {n:"Triple Guns",       c:1800,d:"Fires <b>3 darts</b> instead of 2. Base output tripled vs T0."},
+    {n:"Armor Piercing Darts",c:4000,d:"<b>+1 damage</b> to Ceramic, <b>+5 damage to MOAB-class</b>."},
+    {n:"Sub Commander",     c:25000,d:"All Subs in range gain <b>+1 damage</b>, <b>+2 pierce</b>, <b>+2 MOAB damage</b>. Commander itself <b>+1 damage</b>, <b>+pierce</b>. Best sub-wide buff."}
+  ]]
+});
+
+/* ========== 9. MONKEY BUCCANEER ========== */
+TOWERS.push(
+{ name:"Monkey Buccaneer", cat:"Military", portrait:"Monkey_Buccaneer.png", cost:500, dmg:1, pierce:3, range:45, atk:1.2, projSpd:"medium", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Water",
+  notes:"Water only. Carrier Flagship (5-0-0) becomes aircraft carrier with planes; Pirate Lord (0-5-0) harpoons MOABs for cash; Trade Empire (0-0-5) generates massive income and buffs Merchantmen.",
+  imm:["Requires water placement"],
+  paths:[[
+    {n:"Faster Shooting",   c:400, d:"<b>Attack speed +33%</b>."},
+    {n:"Double Shot",       c:450, d:"Fires <b>2 darts</b> simultaneously."},
+    {n:"Destroyer",         c:3200,d:"Continuous rapid-fire chain gun. Attack cooldown <span class='num'>~0.1s</span>."},
+    {n:"Aircraft Carrier",  c:15000,d:"Spawns <b>2 aircraft</b> that fire darts around the ship. Each plane acts like a mini Monkey Ace."},
+    {n:"Carrier Flagship",  c:32000,d:"Planes upgraded with <b>+bomb attack</b>. Ship also fires heavy cannon. Huge combined DPS."}
+  ],[
+    {n:"Long Range",        c:300, d:"<b>Range +8</b> (45→53)."},
+    {n:"Crow's Nest",       c:400, d:"<b>Camo detection</b>, <b>+range</b>. Improves targeting."},
+    {n:"Grape Shot",        c:650, d:"Fires a <b>volley of 5 grapes</b> on each attack (sharp, 1 dmg each)."},
+    {n:"Cannon Ship",       c:3200,d:"Adds a powerful <b>cannon attack</b> (3 dmg, 18 pierce explosive) every 2.5s. Cannot pop Black without MIB."},
+    {n:"Pirate Lord",       c:35000,d:"Ability: <b>hooks MOAB-class bloons in</b>, dragging them backward and dealing <b>massive damage</b>. Passive +MOAB damage, +pierce on grapes. Bonus $ per MOAB hooked."}
+  ],[
+    {n:"Hot Shot",          c:300, d:"Pops <b>Lead and Frozen</b>, +1 dmg to Ceramic."},
+    {n:"Monkey Pirates",    c:1200,d:"Occasionally <b>hooks and instantly destroys</b> small bloons, giving extra cash."},
+    {n:"Merchantman",       c:3200,d:"Generates <b>$200/round</b> of passive income. Does not replace attack."},
+    {n:"Favored Trades",    c:8000,d:"Income becomes <b>$600/round</b>. Each other Merchantman in range adds further bonus."},
+    {n:"Trade Empire",      c:30000,d:"<b>Massive cash generation</b> from all Merchantmen in radius. Other Buccaneers pop for bonus cash. Can generate tens of thousands per round."}
+  ]]
+});
+
+/* ========== 10. MONKEY ACE ========== */
+TOWERS.push(
+{ name:"Monkey Ace", cat:"Military", portrait:"Monkey_Ace.png", cost:800, dmg:1, pierce:7, range:"global", atk:1.42, projSpd:"fast", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land (flying)",
+  notes:"Flies in 8 selectable patterns. Sky Shredder (5-0-0) is the highest base DPS Ace T5. Tsar Bomba (0-5-0) is a massive nuke ability. Flying Fortress (0-0-5) is a slow bomber with colossal DPS.",
+  imm:[],
+  paths:[[
+    {n:"Rapid Fire",        c:600, d:"<b>Attack speed +50%</b>."},
+    {n:"Lots More Darts",   c:750, d:"<b>Pierce +2</b>, fires <b>+2 darts per attack</b> (spread)."},
+    {n:"Fighter Plane",     c:2500,d:"Drops <b>2 smaller fighter planes</b> alongside the main Ace. Each fires independently."},
+    {n:"Operation: Dart Storm",c:5000,d:"Continuous dart stream in a <b>figure-8 / infinity pattern</b>. Covers entire map repeatedly."},
+    {n:"Sky Shredder",      c:30000,d:"Extreme fire rate, <b>huge pierce</b>, <b>+2 damage</b>. Covers whole map multiple times per second. Dominates Ace DPS."}
+  ],[
+    {n:"Exploding Pineapple",c:400, d:"Every 11s drops a <b>time-bomb pineapple</b> that explodes after 3s (8 pierce, 2 dmg)."},
+    {n:"Spy Plane",         c:500, d:"<b>Camo detection</b>. Darts can pop Camo."},
+    {n:"Bomber Ace",        c:2800,d:"Drops bombs every pass instead of darts. Bombs have +blast, <b>+2 damage</b>."},
+    {n:"Ground Zero",       c:18000,d:"Ability (50s CD): drops <b>massive nuke</b>, dealing <b>1500 damage</b> across huge radius. Cannot hit Black/Zebra (explosive)."},
+    {n:"Tsar Bomba",        c:65000,d:"Ability: even larger nuke, <b>6000 damage</b>. Passive <b>+constant missile barrage</b>. Nukes with 40s cooldown."}
+  ],[
+    {n:"Sharper Darts",     c:200, d:"<b>Pierce +2</b>."},
+    {n:"Centered Path",     c:400, d:"Ace flies a tight <b>figure-8 over the center</b> of the map instead of around perimeter."},
+    {n:"Neva-Miss Targeting",c:4800,d:"All darts <b>seek bloons</b>. Huge DPS on tight tracks."},
+    {n:"Spectre",           c:20000,d:"Slow bomber plane. Fires <b>constant darts AND drops bombs</b> continuously. Enormous sustained DPS."},
+    {n:"Flying Fortress",   c:100000,d:"Even slower, larger gunship. <b>2× Spectre firepower</b>: quad miniguns + bomb barrage. One of the most expensive T5s."}
+  ]]
+});
+
+/* ========== 11. HELI PILOT ========== */
+TOWERS.push(
+{ name:"Heli Pilot", cat:"Military", portrait:"Heli_Pilot.png", cost:1600, dmg:1, pierce:3, range:40, atk:0.1, projSpd:"fast", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land (flying)",
+  notes:"Mouse-controllable flying tower (Follow Touch / Lock-In-Place / Pursuit). Apache Prime (5-0-0) has plasma miniguns + missiles = extreme DPS. Special Poperations (0-5-0) drops marine squad. Comanche Commander (0-0-5) spawns helper helis.",
+  imm:[],
+  paths:[[
+    {n:"Quad Darts",        c:450, d:"Fires <b>4 darts</b> instead of 2."},
+    {n:"Pursuit",           c:700, d:"Follows selected bloon automatically. <b>+attack speed</b>."},
+    {n:"Razor Rotors",      c:1200,d:"Rotor blades deal <b>constant damage to nearby bloons</b> (3 dmg/tick, 10 pierce per pass)."},
+    {n:"Apache Dartship",   c:22000,d:"Upgrades to Apache attack helicopter: <b>dual miniguns + homing rockets</b>. Huge sustained DPS."},
+    {n:"Apache Prime",      c:60000,d:"<b>Plasma miniguns</b> (pops Lead & Frozen), <b>MOAB-seeking missiles</b>, and a <b>railgun</b> with huge single-target. Top general-purpose T5."}
+  ],[
+    {n:"Bigger Jets",       c:350, d:"Heli <b>moves faster</b> between waypoints."},
+    {n:"IFR",               c:700, d:"<b>Camo detection</b>, <b>+range</b>."},
+    {n:"Downdraft",         c:3500,d:"Rotor wash <b>pushes bloons backward</b> along the track."},
+    {n:"Support Chinook",   c:7000,d:"Ability: <b>reposition other towers</b> (drag to new location). Also drops cash crates ($1800) and lives (+10)."},
+    {n:"Special Poperations",c:35000,d:"Drops a squad of <b>armed marines</b> at cursor. Permanent strike team that auto-attacks bloons (multi-unit)."}
+  ],[
+    {n:"Faster Darts",      c:300, d:"<b>Projectile speed +50%</b>."},
+    {n:"Faster Firing",     c:550, d:"<b>Attack speed +25%</b>."},
+    {n:"MOAB Shove",        c:3800,d:"Ability: <b>pushes MOAB-class backward</b> along track (distance varies with MOAB size). Short cooldown."},
+    {n:"Comanche Defense",  c:14000,d:"Spawns <b>2 autonomous mini-Comanches</b> that patrol and fire rockets."},
+    {n:"Comanche Commander",c:42000,d:"Adds a <b>3rd Comanche</b>. All Comanches get bigger rockets + miniguns. Combined DPS massive."}
+  ]]
+});
+
+/* ========== 12. MORTAR MONKEY ========== */
+TOWERS.push(
+{ name:"Mortar Monkey", cat:"Military", portrait:"Mortar_Monkey.png", cost:750, dmg:1, pierce:40, range:"global", atk:1.8, projSpd:"lob", camo:true, lead:true, black:false, purple:false, moab:true, footprint:"Land",
+  notes:"Aims at a fixed ground point (global). Natural Camo + Lead detection. Explosive damage CANNOT pop Black/Zebra/DDT/Purple without support. The Biggest One (5-0-0) = screen-wide blast + MOAB stun. Pop and Awe (0-5-0) = 10s bombardment. Blooncineration (0-0-5) = permanent napalm.",
+  imm:["Black","Zebra","DDT","Purple"],
+  paths:[[
+    {n:"Bigger Blast",      c:350, d:"<b>Blast radius +20%</b>."},
+    {n:"Bloon Buster",      c:500, d:"<b>+1 damage</b> (1→2), <b>+1 dmg to Ceramic</b>."},
+    {n:"Shell Shock",       c:1500,d:"Shells <b>stun bloons for 1 second</b> in blast area. Does not stun MOAB."},
+    {n:"The Big One",       c:5500,d:"Massive blast radius (<span class='num'>+100%</span>), <b>+2 damage</b>, +massive pierce."},
+    {n:"The Biggest One",   c:40000,d:"Screen-wide blast. <b>+6 damage</b>, stuns <b>MOAB-class briefly</b>. Effectively a global AoE nuke every 1.8s."}
+  ],[
+    {n:"Faster Reload",     c:300, d:"<b>Attack speed +22%</b>."},
+    {n:"Rapid Reload",      c:550, d:"<b>+33% more</b> attack speed."},
+    {n:"Heavy Shells",      c:1400,d:"<b>+1 damage</b>, <b>+4 damage to MOAB-class</b>."},
+    {n:"Artillery Battery", c:5500,d:"Fires <b>2 shells per volley</b> rapidly. Attack speed roughly tripled."},
+    {n:"Pop and Awe",       c:38000,d:"Ability (60s CD, 10s): <b>continuous screen-wide bombardment</b> that stuns ALL bloons including MOABs. One of the best panic buttons."}
+  ],[
+    {n:"Increased Accuracy",c:200, d:"Reduced scatter — shells land closer to target point."},
+    {n:"Burny Stuff",       c:500, d:"Fire DoT in blast area (<span class='num'>1 dmg/sec for 3s</span>)."},
+    {n:"Signal Flare",      c:1600,d:"Removes <b>Camo and Regrow</b> from bloons in blast area."},
+    {n:"Shattering Shells", c:12000,d:"Removes <b>Fortified</b> property, strips MOAB shields. Huge against Fortified BADs."},
+    {n:"Blooncineration",   c:45000,d:"Napalm wall + <b>permanent fire zone</b> on target point. <span class='num'>10 dmg/sec DoT</span>. Strips Camo/Regrow/Fortified."}
+  ]]
+});
+
+/* ========== 13. DARTLING GUNNER ========== */
+TOWERS.push(
+{ name:"Dartling Gunner", cat:"Military", portrait:"Dartling_Gunner.png", cost:850, dmg:1, pierce:3, range:"global", atk:0.1, projSpd:"fast", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Mouse-aimed continuous-fire tower. Ray of Doom (5-0-0) is one of the top line DPS sources. M.A.D (0-5-0) is a global MOAB nuke. Plasma Monkey Gun / BEZ / Bloon Exclusion Zone (0-0-5) is a shotgun-style pierce monster.",
+  imm:[],
+  paths:[[
+    {n:"Focused Firing",    c:350, d:"Reduced spread (tighter aim), <b>+range</b>."},
+    {n:"Laser Shock",       c:1800,d:"Darts become <b>laser beams</b>: pops Lead and Frozen, brief stun on hit. Cannot pop Purple."},
+    {n:"Laser Cannon",      c:3400,d:"<b>+2 damage</b>, <b>+3 pierce</b>. Pops all types except Purple."},
+    {n:"Plasma Accelerator",c:14500,d:"Beam gains damage and pierce the <b>longer it's fired</b> in one direction. Can shred MOABs."},
+    {n:"Ray of Doom",       c:80000,d:"Permanent line of <b>plasma death</b>. Hits every bloon in line, <b>4 dmg per tick at 30/sec</b>. Pierces BAD layers. Highest line DPS."}
+  ],[
+    {n:"Advanced Targeting",c:300, d:"Automatic targeting toggle added (no mouse needed). Easier aim."},
+    {n:"Faster Barrel Spin",c:600, d:"Attack speed <b>ramps up</b> the longer you hold fire."},
+    {n:"Hydra Rocket Pods", c:4200,d:"Rockets with <b>explosive splash</b>. <b>+3 damage to MOAB</b>. Cannot pop Black/Zebra."},
+    {n:"Rocket Storm",      c:8500,d:"Ability (50s CD): <b>massive rocket barrage</b> for 3s. Huge AoE MOAB damage."},
+    {n:"M.A.D",             c:90000,d:"Ability: fires a <b>MOAB-seeking super-nuke</b>. Massive damage (<span class='num'>100,000</span> to primary target, huge AoE). Short cooldown."}
+  ],[
+    {n:"Powerful Darts",    c:250, d:"<b>+1 damage</b>, <b>+1 pierce</b>."},
+    {n:"Buckshot",          c:800, d:"Fires <b>4 darts</b> in a shotgun spread instead of single stream."},
+    {n:"Bloon Area Denial System",c:2800,d:"<b>+pierce</b>, <b>+damage</b>, much tighter pellet wall."},
+    {n:"Bloon Exclusion Zone",c:18000,d:"Huge shotgun pellet wall: <b>enormous pierce</b>, blankets one area. Perfect for choke-point denial."},
+    {n:"Plasma Monkey Gun", c:70000,d:"Fires <b>plasma pellets at extreme rate</b>. Pops all types. Top close-range T5 DPS."}
+  ]]
+});
+
+/* ========== 14. WIZARD MONKEY ========== */
+TOWERS.push(
+{ name:"Wizard Monkey", cat:"Magic", portrait:"Wizard_Monkey.png", cost:400, dmg:1, pierce:3, range:40, atk:1.1, projSpd:"fast", camo:false, lead:false, black:true, purple:false, moab:true, footprint:"Land",
+  notes:"Magic damage — CANNOT pop Purple without upgrades. Archmage (5-0-0) pops Purple + top Magic DPS. Wizard Lord Phoenix (0-5-0) transforms into massive flying AoE. Prince of Darkness (0-0-5) summons undead MOABs.",
+  imm:["Purple"],
+  paths:[[
+    {n:"Guided Magic",      c:200, d:"Bolts <b>home toward bloons</b>."},
+    {n:"Arcane Blast",      c:450, d:"<b>+1 damage</b>, <b>+3 pierce</b>."},
+    {n:"Arcane Mastery",    c:900, d:"<b>+1 damage</b>, <b>+3 pierce</b>, <b>+attack speed</b>."},
+    {n:"Arcane Spike",      c:8500,d:"<b>+4 damage</b>, <b>+20 damage to MOAB-class</b>. Top single-target Magic DPS per cost."},
+    {n:"Archmage",          c:50000,d:"Combines Arcane Spike + Fireball line effects. <b>Pops Purple</b>. Huge MOAB DPS plus fireball AoE."}
+  ],[
+    {n:"Fireball",          c:400, d:"Every 3.5s casts a <b>large fireball</b> with splash (10 pierce, 3 dmg, Fire type)."},
+    {n:"Wall of Fire",      c:750, d:"Creates a <b>strip of flame</b> on the track every 4.2s — 5 dmg/sec to everything passing through."},
+    {n:"Dragon's Breath",   c:2800,d:"Constant <b>fire breath</b> instead of bolts. High DPS, pops Lead/Frozen."},
+    {n:"Summon Phoenix",    c:3800,d:"Ability (45s CD): summons a <b>phoenix</b> for 20s that attacks independently."},
+    {n:"Wizard Lord Phoenix",c:32000,d:"Ability: <b>Wizard transforms into a massive phoenix</b> for 15s. Enormous fire AoE, pops all types."}
+  ],[
+    {n:"Intense Magic",     c:350, d:"<b>+2 pierce</b>, <b>+range</b>."},
+    {n:"Monkey Sense Unleashed",c:500,d:"<b>Camo detection</b>. Also reveals Camo bloons briefly."},
+    {n:"Shimmer",           c:2000,d:"<b>Permanently removes Camo property</b> from bloons that enter range."},
+    {n:"Necromancer: Unpopped Army",c:8500,d:"Raises dead bloons as <b>zombie allies</b> that attack other bloons. Army persists through round."},
+    {n:"Prince of Darkness",c:44000,d:"Summons <b>zombie MOABs, BFBs, and ZOMGs</b> that fight for you. Massive army."}
+  ]]
+});
+
+/* ========== 15. SUPER MONKEY ========== */
+TOWERS.push(
+{ name:"Super Monkey", cat:"Magic", portrait:"Super_Monkey.png", cost:2500, dmg:1, pierce:1, range:45, atk:0.04, projSpd:"very fast", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Extreme base attack speed. True Sun God (5-0-0) consumes Sun Temples (~$1.75M total sacrifice). Anti-Bloon (0-5-0) = 10 dmg missile storm. Legend of the Night (0-0-5) = most powerful ability in game.",
+  imm:[],
+  paths:[[
+    {n:"Laser Blasts",      c:3500,d:"Pops <b>Lead and Frozen</b>, <b>+1 damage</b>."},
+    {n:"Plasma Blasts",     c:7000,d:"<b>+1 damage</b>, <b>+pierce</b>, pops all except Purple."},
+    {n:"Sun Avatar",        c:25000,d:"<b>3 simultaneous beams</b>, massive range, high DPS. Pops Purple."},
+    {n:"Sun Temple",        c:90000,d:"<b>Consumes nearby towers</b> for power. Sacrificial tiers buff different aspects (damage, range, cash boost). Creates powerful multi-attack tower."},
+    {n:"True Sun God",      c:500000,d:"<b>Consumes 2 Sun Temples</b>. Godlike AoE. Sacrifice total determines final power (up to ~$1.75M for maxed)."}
+  ],[
+    {n:"Super Range",       c:1000,d:"<b>Range +8</b>."},
+    {n:"Epic Range",        c:2500,d:"<b>Range +9</b> more."},
+    {n:"Robo Monkey",       c:8500,d:"Two gun arms fire at <b>separate targets</b>. Effectively doubles output, <b>+1 damage</b>."},
+    {n:"Tech Terror",       c:25000,d:"Ability (70s CD): fires a <b>1200-dmg energy blast</b>. Base <b>+dmg, +fire rate</b>."},
+    {n:"The Anti-Bloon",    c:80000,d:"Continuous <b>10-dmg plasma blasts + missile barrage</b>. Huge pierce. Best endless-mode per-round DPS."}
+  ],[
+    {n:"Knockback",         c:2500,d:"Attacks <b>push bloons backward</b>."},
+    {n:"Ultravision",       c:1800,d:"<b>Camo detection</b>, <b>+range</b>."},
+    {n:"Dark Knight",       c:6500,d:"Melee dark blades, <b>3 damage</b>, pops Purple. Sword attacks."},
+    {n:"Dark Champion",     c:22000,d:"<b>+2 damage</b>, <b>+pierce</b>. Blades <b>seek MOABs</b>."},
+    {n:"Legend of the Night",c:150000,d:"Ability: creates a <b>devastating dark vortex</b> that instantly destroys non-MOABs and deals massive MOAB damage. Sustained passive: crushing AoE. Arguably strongest T5."}
+  ]]
+});
+
+/* ========== 16. NINJA MONKEY ========== */
+TOWERS.push(
+{ name:"Ninja Monkey", cat:"Magic", portrait:"Ninja_Monkey.png", cost:500, dmg:1, pierce:1, range:40, atk:0.71, projSpd:"fast", camo:true, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Innate Camo detection. Grandmaster Ninja (5-0-0) = 8 shurikens/attack at extreme speed. Grand Saboteur (0-5-0) permanently slows all bloons 50%. Master Bomber (0-0-5) sticks bombs to MOABs.",
+  imm:[],
+  paths:[[
+    {n:"Ninja Discipline",  c:350, d:"<b>Attack speed +25%</b>, <b>+range</b>."},
+    {n:"Sharp Shurikens",   c:300, d:"<b>Pierce +2</b>."},
+    {n:"Double Shot",       c:800, d:"Throws <b>2 shurikens</b> per attack."},
+    {n:"Bloonjitsu",        c:3500,d:"Throws <b>5 shurikens</b> per attack in a spread."},
+    {n:"Grandmaster Ninja", c:30000,d:"Throws <b>8 shurikens</b> at extreme speed (<span class='num'>~0.18s</span>), <b>+pierce, +damage</b>. Top raw DPS Ninja."}
+  ],[
+    {n:"Distraction",       c:350, d:"<b>15% chance</b> on hit to knock bloons back down the track."},
+    {n:"Counter-Espionage", c:500, d:"Shurikens <b>strip Camo</b> from bloons they hit."},
+    {n:"Shinobi Tactics",   c:1200,d:"Buffs nearby Ninjas: <b>+10% attack speed, +1 pierce</b>, stacks up to 20×."},
+    {n:"Bloon Sabotage",    c:7500,d:"Ability (90s CD): all bloons on screen <b>slowed 50% for 15s</b>."},
+    {n:"Grand Saboteur",    c:25000,d:"<b>Permanent 50% slow</b> on ALL bloons on track. Sabotage ability improved to 75% slow."}
+  ],[
+    {n:"Seeking Shuriken",  c:350, d:"Shurikens <b>home onto bloons</b>."},
+    {n:"Caltrops",          c:450, d:"Drops caltrop piles on track every 5s (6 pierce, 1 dmg each)."},
+    {n:"Flash Bomb",        c:2000,d:"Attacks <b>stun bloons</b> for 1.1s on hit."},
+    {n:"Sticky Bomb",       c:4500,d:"Every 10s <b>sticks a bomb to a MOAB-class bloon</b>; detonates for <b>3500 damage</b>."},
+    {n:"Master Bomber",     c:28000,d:"Sticky bomb <b>every 2.5s, 8000 damage</b>. Bombs stick to every MOAB in range. Top MOAB assassin."}
+  ]]
+});
+
+/* ========== 17. ALCHEMIST ========== */
+TOWERS.push(
+{ name:"Alchemist", cat:"Magic", portrait:"Alchemist.png", cost:550, dmg:1, pierce:1, range:45, atk:1.45, projSpd:"lob", camo:false, lead:true, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Natural Lead popping. Buffs nearby monkey with Acidic Mixture Dip (gives +pierce, +1 damage per attack for X hits). Permanent Brew (0-5-0) = global permanent buff. Total Transformation (5-0-0) = turn monkeys into monsters. Bloon Master Alchemist (0-0-5) = turn MOABs into Red bloons.",
+  imm:[],
+  paths:[[
+    {n:"Larger Potions",    c:200, d:"<b>Splash radius +20%</b>."},
+    {n:"Acid Pool",         c:500, d:"On miss, potions drop <b>acid pools</b> on ground (5 dmg/sec DoT). Persistent track damage."},
+    {n:"Perishing Potions", c:1400,d:"<b>+15 damage to MOAB-class</b>. DoT duration and damage improved."},
+    {n:"Unstable Concoction",c:6500,d:"Attaches unstable potion to a bloon: when popped, <b>massive explosion</b> (300 dmg)."},
+    {n:"Total Transformation",c:38000,d:"Ability (90s CD, 10s): <b>nearby monkeys transform into mini-monsters</b> with huge attack speed and damage."}
+  ],[
+    {n:"Stronger Stimulant",c:350, d:"Acidic Mixture Dip buff <b>lasts longer</b> (10→15 attacks)."},
+    {n:"Berserker Brew",    c:800, d:"Buff grants target monkey <b>+1 damage, +2 pierce, +15% attack speed</b> for 10 attacks."},
+    {n:"Stronger Stimulant (T3)",c:3000,d:"Buff lasts <b>30% longer</b> (15→20 attacks)."},
+    {n:"Rubber to Gold",    c:2800,d:"Turns <b>5 random bloons per round into gold</b>, destroying them and giving +$50 each."},
+    {n:"Permanent Brew",    c:50000,d:"<b>All monkeys in radius get permanent Berserker Brew</b>. No re-buff needed. One of the best support T5s."}
+  ],[
+    {n:"Faster Throwing",   c:300, d:"<b>Attack speed +15%</b>."},
+    {n:"Acidic Mixture Dip",c:600, d:"Can now <b>buff an adjacent tower</b> with Acid Dip (+1 damage, +2 pierce, stacks per attack). Core of Alchemist support."},
+    {n:"Lead to Gold",      c:2500,d:"<b>Lead bloons pop into $50</b> each. Great synergy with Lead-spawning rounds."},
+    {n:"Transforming Tonic",c:5500,d:"Ability (90s CD, 15s): Alchemist <b>self-transforms into a monster</b> with huge DPS."},
+    {n:"Bloon Master Alchemist",c:55000,d:"Ability: <b>converts MOAB-class bloons into weaker versions</b> (BAD→ZOMG, ZOMG→BFB, etc). Turns regular bloons into Red bloons."}
+  ]]
+});
+
+/* ========== 18. DRUID ========== */
+TOWERS.push(
+{ name:"Druid", cat:"Magic", portrait:"Druid.png", cost:425, dmg:1, pierce:3, range:35, atk:0.95, projSpd:"fast", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Nature-themed with 3 distinct specializations. Avatar of Wrath (0-0-5) scales attack speed with bloon count — devastating vs rushes. Spirit of the Forest (0-5-0) is best mid-game farm support. Superstorm (5-0-0) is global MOAB AoE.",
+  imm:[],
+  paths:[[
+    {n:"Hard Thorns",       c:300, d:"Pops <b>Lead and Frozen</b>, <b>+1 damage to Ceramic</b>."},
+    {n:"Heart of Thunder",  c:800, d:"Every 3s fires <b>lightning bolt hitting 7 bloons</b> (3 damage each)."},
+    {n:"Druid of the Storm",c:1800,d:"Tornado ability <b>pushes bloons backward along track</b>. Short cooldown."},
+    {n:"Ball Lightning",    c:3500,d:"Constant <b>chain lightning orbs</b> around the Druid. Huge AoE DPS."},
+    {n:"Superstorm",        c:65000,d:"Ability (90s CD, 6s): <b>massive tornado + constant lightning</b> clears entire screen. Global ultimate."}
+  ],[
+    {n:"Heart of Oak",      c:200, d:"Fires <b>more thorns</b> per attack."},
+    {n:"Druid of the Jungle",c:700, d:"Vines <b>grab and hold</b> bloons, dealing damage over time."},
+    {n:"Jungle's Bounty",   c:3500,d:"Generates <b>$1000/round</b>. Boosts nearby Banana Farms by 25%."},
+    {n:"Spirit of the Forest",c:12000,d:"Permanent <b>thorn wall + massive cash</b> (~$3000/round). Thorn wall damages everything on track."},
+    {n:"Sacred Forest",     c:80000,d:"Ultimate forest: generates <b>$10,000/round</b>, thorn wall <b>+stuns MOABs</b>. Buffs all Farms."}
+  ],[
+    {n:"Thorn Swarm",       c:300, d:"<b>+thorns per attack</b> (3→4)."},
+    {n:"Heart of Vengeance",c:300, d:"<b>+Attack speed per life lost</b>. Scales dramatically as lives drop."},
+    {n:"Druid of Wrath",    c:1500,d:"<b>+Attack speed per attack</b> made. Stacks up to +50% at max."},
+    {n:"Poplust",           c:2500,d:"Buffs <b>nearby Druids +15% attack speed, +1 pierce</b>."},
+    {n:"Avatar of Wrath",   c:30000,d:"<b>Attack speed scales with bloon count on screen</b>, up to 5× base. <b>+damage, +pierce</b>. Shreds rushes."}
+  ]]
+});
+
+/* ========== 19. MERMONKEY ========== */
+TOWERS.push(
+{ name:"Mermonkey", cat:"Magic", portrait:"Mermonkey.png", cost:650, dmg:1, pierce:3, range:40, atk:1.2, projSpd:"medium", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land or Water",
+  notes:"Can be placed on land OR water. Water placement boosts attack speed. The Deep Lord (5-0-0) summons sea creatures; Leviathan (0-5-0) is a boss-like fighter; Lurker (0-0-5) is permanent stealth DPS.",
+  imm:[],
+  paths:[[
+    {n:"Bigger Trident",    c:250, d:"<b>Pierce +3</b>."},
+    {n:"Swordfish",         c:500, d:"Fires a <b>large piercing swordfish</b> with high damage and pierce."},
+    {n:"Beachcomb",         c:1100,d:"Drops <b>beach debris</b> on the track that slows and damages."},
+    {n:"Tidal Wave",        c:3500,d:"Ability (60s CD): <b>massive wave</b> pushes all bloons backward, deals damage."},
+    {n:"The Deep Lord",     c:35000,d:"Summons <b>sea creatures</b> (small sharks, octopi) that attack independently. Huge AoE."}
+  ],[
+    {n:"Songs of the Industrial Revolution",c:400,d:"Buffs nearby monkeys: slightly <b>reduces their cost</b>."},
+    {n:"Songs of the Jungle Kings",c:700,d:"Buffs nearby monkeys: <b>+10% attack speed</b>."},
+    {n:"Whirlpool",         c:2200,d:"Creates <b>water vortex</b> that pulls bloons in, stuns and damages."},
+    {n:"The Tide Turner",   c:8500,d:"<b>Slows ALL bloons on map by 30%</b>. Permanent global slow."},
+    {n:"Leviathan",         c:50000,d:"Summons a <b>Leviathan</b> that attacks MOAB-class bloons with massive damage. Kraken-like ultimate."}
+  ],[
+    {n:"Faster Fins",       c:150, d:"<b>Attack speed +15%</b>."},
+    {n:"Anchors Aweigh",    c:400, d:"Drops <b>anchors that stun bloons</b> when they hit."},
+    {n:"Submerge & Support",c:900, d:"<b>Submerge</b> for stealth; <b>reveals Camo</b> bloons in radius."},
+    {n:"Arctic Knight",     c:4500,d:"<b>Ice-axe attacks freeze bloons</b>. Deals damage + freeze."},
+    {n:"Lurker",            c:35000,d:"Permanent submerge mode. <b>Huge damage, camo reveal, high attack speed</b>. Best stealth T5."}
+  ]]
+});
+
+/* ========== 20. BANANA FARM ========== */
+TOWERS.push(
+{ name:"Banana Farm", cat:"Support", portrait:"Banana_Farm.png", cost:1050, dmg:0, pierce:0, range:"n/a", atk:"passive", projSpd:"n/a", camo:false, lead:false, black:false, purple:false, moab:false, footprint:"Land",
+  notes:"Primary income tower. Does not attack. Banana Central (5-0-0) gives global aura boost. Monkey-Nomics (0-5-0) prints $10,000/ability with no repay. Monkey Wall Street (0-0-5) generates + attacks bloons.",
+  imm:["Cannot attack"],
+  paths:[[
+    {n:"Increased Production",c:400,d:"Generates <b>~$200/round</b>. Baseline farm improvement."},
+    {n:"Greater Production",c:550, d:"Generates <b>~$480/round</b>."},
+    {n:"Banana Plantation", c:2600,d:"Generates <b>~$1500/round</b> (20 bananas worth $80 each)."},
+    {n:"Banana Research Facility",c:8500,d:"Generates <b>~$3000/round</b> (16 crates worth $320 each)."},
+    {n:"Banana Central",    c:100000,d:"Passive aura: <b>all Farms in radius produce +25% more</b>. Does not produce bananas itself."}
+  ],[
+    {n:"Long Life Bananas", c:150, d:"Bananas last <b>5× longer</b> (6s→30s) before despawning. Prevents cash loss."},
+    {n:"Valuable Bananas",  c:300, d:"Bananas <b>worth 25% more</b>."},
+    {n:"Monkey Bank",       c:3000,d:"Stores cash internally, earns <b>15% interest per round</b>. Must be collected (or auto-collects on sell)."},
+    {n:"IMF Loan",          c:8500,d:"Ability (90s CD): <b>borrow $10,000 instantly</b>; repaid from bloon pops. Huge spike-buy enabler."},
+    {n:"Monkey-Nomics",     c:100000,d:"Ability (90s CD): <b>generates $10,000 with NO repayment</b>. Endless cash generator at T5."}
+  ],[
+    {n:"EZ Collect",        c:200, d:"Bananas auto-collect in <b>larger radius</b>. QoL + less miss."},
+    {n:"Marketplace",       c:2400,d:"<b>Auto-collects</b> bananas, generates +$400/round total."},
+    {n:"Central Market",    c:3000,d:"Generates <b>+$800/round</b> total. Stacks income with farm effects."},
+    {n:"Monkey Wall Street",c:30000,d:"Generates <b>$4000/round</b> + attacks bloons with <b>ticker tape shots</b>. First attacking farm."},
+    {n:"Monkeyopolis",      c:200000,d:"<b>Consumes up to 8 nearby Farms</b> and generates combined income + 30% extra. Most powerful farm T5."}
+  ]]
+});
+
+/* ========== 21. SPIKE FACTORY ========== */
+TOWERS.push(
+{ name:"Spike Factory", cat:"Support", portrait:"Spike_Factory.png", cost:1000, dmg:1, pierce:10, range:15, atk:2.0, projSpd:"n/a", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Places spike piles at the END of track. Very short range. Spikes persist across rounds (until popped). Super Mines (5-0-0) = explosive super-mines. Carpet of Spikes (0-5-0) = 15s track-wide coverage. Perma-Spike (0-0-5) = permanent high-DPS spike wall.",
+  imm:[],
+  paths:[[
+    {n:"Bigger Stacks",     c:400, d:"Pile size increased: <b>5→10 spikes per pile</b>."},
+    {n:"White Hot Spikes",  c:850, d:"Pops <b>Lead and Frozen</b>, <b>+1 damage to Ceramic</b>."},
+    {n:"Spiked Balls",      c:2000,d:"Larger spike balls, <b>+pierce, +damage</b>."},
+    {n:"Spiked Mines",      c:6500,d:"Spikes become <b>exploding mines</b> with huge AoE damage."},
+    {n:"Super Mines",       c:95000,d:"<b>Enormous mines</b>: +500 MOAB damage per mine, massive blast radius. Can delete BFBs in 1 mine."}
+  ],[
+    {n:"Faster Production", c:300, d:"Places piles <b>33% faster</b>."},
+    {n:"Even Faster Production",c:550,d:"<b>+50% more</b> speed total."},
+    {n:"MOAB SHREDR",       c:2400,d:"Spikes deal <b>+5 damage to MOAB-class</b>."},
+    {n:"Deadly Spikes",     c:3500,d:"<b>+2 damage per spike</b>, <b>+MOAB damage</b>."},
+    {n:"Carpet of Spikes",  c:35000,d:"Ability (90s CD): <b>covers entire track in spikes for 15s</b>. Panic button for lategame rushes."}
+  ],[
+    {n:"Long Reach",        c:200, d:"Places piles <b>further back along track</b>."},
+    {n:"Smart Spikes",      c:350, d:"Spikes pop <b>Camo and remove Regrow</b> property."},
+    {n:"Long Life Spikes",  c:750, d:"Spikes last <b>3 rounds</b> before expiring."},
+    {n:"Perma-Spike",       c:8000,d:"Spikes are <b>permanent</b>. <b>+4 damage per spike</b>. Accumulates huge DPS wall."},
+    {n:"Perma-Spike (T5)",  c:55000,d:"Enhanced permanent spikes with <b>+damage, +pierce</b>. Best long-run passive line-DPS."}
+  ]]
+});
+
+/* ========== 22. MONKEY VILLAGE ========== */
+TOWERS.push(
+{ name:"Monkey Village", cat:"Support", portrait:"Monkey_Village.png", cost:1200, dmg:0, pierce:0, range:30, atk:"passive", projSpd:"n/a", camo:false, lead:false, black:false, purple:false, moab:false, footprint:"Land",
+  notes:"Buffs nearby towers only; doesn't attack. MIB (0-3-0) grants Black/Zebra/Purple popping + Camo to all nearby. Primary Expertise (5-0-0) supercharges Primary towers. Monkeyopolis (0-0-5) consumes Farms.",
+  imm:["Cannot attack"],
+  paths:[[
+    {n:"Bigger Radius",     c:1000,d:"Village radius <b>+8</b> (30→38). Covers more towers."},
+    {n:"Jungle Drums",      c:1900,d:"All nearby towers get <b>+12% attack speed</b>."},
+    {n:"Primary Training",  c:1000,d:"Primary monkeys in range: <b>+1 pierce, +1 dmg to Ceramic</b>."},
+    {n:"Primary Mentoring", c:6000,d:"Primary monkeys in range get <b>free upgrade boost</b> (+1 damage, +pierce, +attack speed)."},
+    {n:"Primary Expertise", c:36000,d:"Massive Primary buffs + <b>passive dart storm attack</b>. Primary towers gain extra projectiles."}
+  ],[
+    {n:"Grow Blocker",      c:400, d:"Stops <b>Regrow regeneration</b> on bloons in range."},
+    {n:"Radar Scanner",     c:1000,d:"Grants <b>Camo detection</b> to all towers in range."},
+    {n:"Monkey Intelligence Bureau",c:6500,d:"Nearby towers can pop <b>Black, Zebra, Lead, Purple</b>. Plus Camo detect. Removes immunity restrictions."},
+    {n:"Call to Arms",      c:18000,d:"Ability (45s CD, 15s): nearby towers gain <b>+100% attack speed, +1 damage</b>."},
+    {n:"Homeland Defense",  c:45000,d:"<b>Permanent Call to Arms effect</b>. Ability stacks on top for burst. Free sentry spawns each round."}
+  ],[
+    {n:"Monkey Business",   c:500, d:"Towers in range <b>cost 10% less</b> (upgrade discount also)."},
+    {n:"Monkey Commerce",   c:1200,d:"Discount <b>increased to 15%</b>, and <b>stacks with other Commerce villages</b>."},
+    {n:"Monkey Town",       c:4500,d:"Pops in radius generate <b>+10% extra cash</b>."},
+    {n:"Monkey City",       c:11000,d:"Pops give <b>+25% cash</b>, <b>stacks with discount</b>."},
+    {n:"Monkeyopolis",      c:250000,d:"<b>Consumes up to 5 Banana Farms</b> in range, combines their income into massive output. Enormous late-game cash."}
+  ]]
+});
+
+/* ========== 23. ENGINEER MONKEY ========== */
+TOWERS.push(
+{ name:"Engineer Monkey", cat:"Support", portrait:"Engineer_Monkey.png", cost:450, dmg:1, pierce:1, range:40, atk:1.2, projSpd:"fast", camo:false, lead:true, black:true, purple:true, moab:true, footprint:"Land",
+  notes:"Builds sentries. Pops Lead by default. Sentry Paragon (5-0-0) deploys ultimate sentries. Ultraboost (0-5-0) adds stacking +8% attack speed permanent buff (up to ×10 stacks). XXXL Trap (0-0-5) catches MOABs for cash.",
+  imm:[],
+  paths:[[
+    {n:"Sentry Gun",        c:500, d:"Deploys a <b>10-second-life sentry</b> (70 pops) every 10 seconds."},
+    {n:"Faster Engineering",c:800, d:"Sentries deployed every <b>8 seconds</b>, <b>+1 damage</b>."},
+    {n:"Sprockets",         c:1900,d:"Sentries and nails get <b>+1 pierce, +1 damage</b>."},
+    {n:"Sentry Champion",   c:13000,d:"Deploys <b>Elite Sentries</b> every ~15s — 4 guns, 60s lifespan, high DPS."},
+    {n:"Sentry Paragon",    c:100000,d:"Deploys a <b>permanent Sentry Paragon</b> — massive multi-weapon sentry with MOAB DPS."}
+  ],[
+    {n:"Larger Service Area",c:250, d:"<b>Range +8</b> (40→48). Also extends sentry placement range."},
+    {n:"Deconstruction",    c:400, d:"Nails <b>strip Fortified</b> from bloons. <b>+5 damage to MOAB-class</b>."},
+    {n:"Bloon Trap",        c:4400,d:"Places a <b>trap</b> catching up to 400 RBE of bloons, converts them to cash ($400)."},
+    {n:"Overclock",         c:10000,d:"Ability (60s CD, 60s): <b>target tower gains +60% attack speed</b> for 60 seconds."},
+    {n:"Ultraboost",        c:85000,d:"<b>Permanent +8% attack speed</b> on overclocked tower. Stacks up to <b>10×</b> (80% total). Can stack a 2nd Ultraboost for even more."}
+  ],[
+    {n:"Oversize Nails",    c:300, d:"<b>+1 damage, +1 pierce</b> per nail."},
+    {n:"Pin",               c:400, d:"Nails <b>pin small bloons briefly</b> (2s stun on non-Ceramic)."},
+    {n:"Double Gun",        c:900, d:"Fires <b>2 nails</b> per attack."},
+    {n:"Cleansing Foam",    c:4000,d:"Ability (25s CD): shoots foam that <b>removes Camo and Regrow</b>; pops Lead."},
+    {n:"XXXL Trap",         c:36000,d:"Bloon Trap becomes huge: catches up to <b>50,000 RBE including MOABs and ZOMGs</b>. Converts to cash."}
+  ]]
+});
+
+/* ========== 24. BEAST HANDLER ========== */
+TOWERS.push(
+{ name:"Beast Handler", cat:"Support", portrait:"Beast_Handler.png", cost:300, dmg:1, pierce:3, range:40, atk:1.2, projSpd:"medium", camo:false, lead:false, black:true, purple:true, moab:true, footprint:"Land (beast placed in terrain)",
+  notes:"Trains tiered beasts: water (piranha→megalodon), air (eagle→roc), land (raptor→T-Rex). Each path is a separate beast type. Megalodon, Roc, T-Rex are top T5s with different specialties.",
+  imm:[],
+  paths:[[
+    {n:"Piranha",           c:300, d:"Water beast (placed on water): fast bite, 1 dmg, 2 pierce."},
+    {n:"Barracuda",         c:500, d:"Faster piranha, <b>+1 damage</b>, pierce +2."},
+    {n:"Great White",       c:3500,d:"Large shark: <b>huge bite damage</b>, MOAB-class damage bonus."},
+    {n:"Orca",              c:12000,d:"<b>Orca grabs MOAB-class bloons</b>, flips them out of the track dealing massive damage."},
+    {n:"Megalodon",         c:75000,d:"Giant shark: <b>huge MOAB DPS</b>, can swallow MOABs whole. Top water T5."}
+  ],[
+    {n:"Eagle",             c:500, d:"Flying beast: swoops at bloons, 1 dmg, 3 pierce, <b>Camo detect</b>."},
+    {n:"Horned Owl",        c:900, d:"Faster eagle, <b>+1 damage</b>."},
+    {n:"Giant Condor",      c:4500,d:"<b>Grabs and drops bloons</b> (including small MOABs) at track start."},
+    {n:"Pouakai",           c:15000,d:"Giant raptor: grabs <b>BFBs and ZOMGs</b> too. Drops them at track start for pop damage."},
+    {n:"Roc",               c:90000,d:"Can grab <b>any bloon including BAD</b>. Extreme single-target removal. Top air T5."}
+  ],[
+    {n:"Microraptor",       c:350, d:"Land beast (placed in grass): chomp attacks, 1 dmg, 5 pierce."},
+    {n:"Gyrfalcon",         c:600, d:"Faster attacks, <b>+1 damage</b>."},
+    {n:"Sabre-Toothed Tiger",c:3200,d:"<b>Bleeds bloons</b> (DoT), high single-hit damage."},
+    {n:"Giganotosaurus",    c:14000,d:"Massive dino: <b>huge AoE melee damage</b>."},
+    {n:"T-Rex",             c:80000,d:"Devours MOAB-class bloons. <b>Highest melee-style AoE</b>. Best land T5."}
+  ]]
+});
+
+/* ================== BLOONS ================== */
+const BLOONS = [
+  { n:"Red",     rbe:1,   hp:1,  speed:25,   mult:"1.0x",  children:"—",                cash:1,   img:"Red_Bloon.png",     props:[],          notes:"Baseline bloon. First appearance R1." },
+  { n:"Blue",    rbe:2,   hp:1,  speed:35,   mult:"1.4x",  children:"1 Red",            cash:2,   img:"Blue_Bloon.png",    props:[],          notes:"First R3." },
+  { n:"Green",   rbe:3,   hp:1,  speed:45,   mult:"1.8x",  children:"1 Blue",           cash:3,   img:"Green_Bloon.png",   props:[],          notes:"First R5." },
+  { n:"Yellow",  rbe:4,   hp:1,  speed:80,   mult:"3.2x",  children:"1 Green",          cash:4,   img:"Yellow_Bloon.png",  props:[],          notes:"Very fast. First R8." },
+  { n:"Pink",    rbe:5,   hp:1,  speed:87.5, mult:"3.5x",  children:"1 Yellow",         cash:5,   img:"Pink_Bloon.png",    props:[],          notes:"Fastest non-MOAB. First R10." },
+  { n:"Black",   rbe:11,  hp:1,  speed:45,   mult:"1.8x",  children:"2 Pink",           cash:11,  img:"Black_Bloon.png",   props:["explosive_immune"], notes:"Immune to Explosive. First R12." },
+  { n:"White",   rbe:11,  hp:1,  speed:50,   mult:"2.0x",  children:"2 Pink",           cash:11,  img:"White_Bloon.png",   props:["ice_immune"], notes:"Immune to Ice/Cold. First R14." },
+  { n:"Purple",  rbe:11,  hp:1,  speed:75,   mult:"3.0x",  children:"2 Pink",           cash:11,  img:"Purple_Bloon.png",  props:["magic_resist"], notes:"Immune to Magic/Plasma/Fire/Energy. First R23." },
+  { n:"Zebra",   rbe:23,  hp:1,  speed:45,   mult:"1.8x",  children:"1 Black, 1 White", cash:23,  img:"Zebra_Bloon.png",   props:["explosive_immune","ice_immune"], notes:"Inherits both Black + White immunities. First R16." },
+  { n:"Lead",    rbe:23,  hp:1,  speed:25,   mult:"1.0x",  children:"2 Black",          cash:23,  img:"Lead_Bloon.png",    props:["sharp_immune"], notes:"Immune to Sharp. Needs Explosive/Fire/Energy. First R18." },
+  { n:"Rainbow", rbe:47,  hp:1,  speed:55,   mult:"2.2x",  children:"2 Zebra",          cash:47,  img:"Rainbow_Bloon.png", props:[],          notes:"First R21." },
+  { n:"Ceramic", rbe:104, hp:10, speed:62.5, mult:"2.5x",  children:"2 Rainbow",        cash:104, img:"Ceramic_Bloon.png", props:[],          notes:"10 HP outer shell, then 2 Rainbows. First R28." },
+  { n:"Super Ceramic", rbe:160, hp:60, speed:62.5, mult:"2.5x", children:"2 Rainbow",   cash:160, img:"Super_Ceramic_Bloon.png", props:["fortified"], notes:"60 HP shell. Comes from DDT children on late rounds." }
+];
+
+const MOABS = [
+  { n:"MOAB", rbe:616,   hp:200,   speed:25,   mult:"1.0x",  children:"4 Ceramic",            cash:21,   img:"MOAB.png",  props:["moab"], firstR:40, notes:"Massive Ornary Air Blimp. Baseline MOAB-class." },
+  { n:"BFB",  rbe:3160,  hp:700,   speed:6.25, mult:"0.25x", children:"4 MOAB",               cash:102,  img:"BFB.png",   props:["moab"], firstR:60, notes:"Brutal Floating Behemoth." },
+  { n:"ZOMG", rbe:16656, hp:4000,  speed:4.5,  mult:"0.18x", children:"4 BFB",                cash:400,  img:"ZOMG.png",  props:["moab"], firstR:80, notes:"Zeppelin Of Mighty Gargantuaness." },
+  { n:"DDT",  rbe:816,   hp:400,   speed:68.75,mult:"2.75x", children:"4 Camo Regrow Ceramic", cash:110, img:"DDT.png",   props:["moab","camo","regrow","sharp_immune","ddt"], firstR:90, notes:"Dark Dirigible Titan. Fast + Camo + Regrow + Lead + Ceramic kids." },
+  { n:"BAD",  rbe:55760, hp:20000, speed:4.5,  mult:"0.18x", children:"2 ZOMG + 3 DDT",       cash:2400, img:"BAD.png",   props:["moab","fortified_capable","ability_immune"], firstR:100, notes:"Big Airship of Doom. Immune to most abilities; only gradual damage works." }
+];
+
+const BOSSES = [
+  { n:"Bloonarius",     tier:"T1-T5", hp:"60k – 13.5M", img:"Bloonarius.png",     notes:"Spawns bloon waves on damage thresholds. Generates escalating swarms." },
+  { n:"Vortex",         tier:"T1-T5", hp:"62k – 14M",   img:"Vortex.png",          notes:"Stun attacks disable towers in range." },
+  { n:"Dreadbloon",     tier:"T1-T5", hp:"50k – 11.3M", img:"Dreadbloon.png",      notes:"Armors bloons (up to full invulnerability). Requires tower swaps." },
+  { n:"Phayze",         tier:"T1-T5", hp:"60k – 13.5M", img:"Phayze.png",          notes:"Phases through attacks; dodges between dimensions." },
+  { n:"Blastapopoulos", tier:"T1-T5", hp:"70k – 15M",   img:"Blastapopoulos.png",  notes:"Fire-themed; burns towers. From Demon Core events." }
+];
+
+/* ================== PROPERTIES ================== */
+const PROPS = [
+  { k:"Camo",      color:"camo",      desc:"Invisible to non-Camo-detect towers. Must be seen by specialized upgrades (Ninja innate, Sub Advanced Intel, Village Radar/MIB, Sniper NVG, Wizard Monkey Sense, Druid of the Jungle, etc.). Signal Flare and Shimmer remove Camo entirely.", countersShort:"Camo detection OR strip with Signal Flare/Shimmer." },
+  { k:"Regrow",    color:"regrow",    desc:"Re-grows lost layers if not fully popped. Regrow rate accelerates with bloon tier. Stopped by Village Grow Blocker, Corrosive Glue, Signal Flare, Smart Spikes, or killing in one shot.", countersShort:"One-shot kill OR Grow Blocker / Signal Flare / Smart Spikes / Acid." },
+  { k:"Fortified", color:"fortified", desc:"Doubles HP for MOAB-class and quadruples HP for Lead and Ceramic outer layers. Stripped by Shattering Shells, Engineer Deconstruction, or Blooncineration.", countersShort:"Shattering Shells / Deconstruction / Blooncineration strip." },
+  { k:"Lead",      color:"lead",      desc:"Immune to Sharp (darts, tacks, blades, shurikens, nails, glaives). Vulnerable to Explosive, Fire, Energy, Plasma, Acid, Shatter, and Normal (melee/physical) damage types.", countersShort:"Explosive / Energy / Fire / Acid / Shatter." },
+  { k:"Purple",    color:"purple",    desc:"Immune to Magic, Plasma, Fire, and Energy damage types. Only Sharp, Explosive, Cold/Ice, Glacier, Shatter, and Normal damage affect it. MIB (Village 0-3-0) removes the immunity.", countersShort:"Sharp / Explosive / Cold. MIB removes immunity." },
+  { k:"MOAB",      color:"moab",      desc:"Umbrella term for MOAB, BFB, ZOMG, DDT, BAD. Not stunnable by most regular stuns. Many abilities deal bonus damage to MOAB-class. Bosses count as MOAB-class.", countersShort:"MOAB-class bonus damage (MOAB Mauler, Armor Piercing, Sub ABR, etc)." },
+  { k:"DDT",       color:"camo",      desc:"Dark Dirigible Titan. Combines Camo + Lead + Regrow + Ceramic + Black immunities into one bloon. Extremely fast. Requires Camo-detect + Explosive/Fire/Energy/Sharp-magic to damage.", countersShort:"Camo-detect + Energy/Explosive/Sharp Magic." }
+];
+
+const RESIST = [
+  { dmg:"Sharp",     leads:"✗", frozen:"✗", purple:"✓", black:"✓", white:"✓", zebra:"✓", ddt:"✗" },
+  { dmg:"Explosive", leads:"✓", frozen:"✓", purple:"✓", black:"✗", white:"✓", zebra:"✗", ddt:"✓" },
+  { dmg:"Cold/Ice",  leads:"✗", frozen:"✗", purple:"✓", black:"✓", white:"✗", zebra:"✗", ddt:"✓" },
+  { dmg:"Fire",      leads:"✓", frozen:"✓", purple:"✗", black:"✓", white:"✓", zebra:"✓", ddt:"✓" },
+  { dmg:"Energy",    leads:"✓", frozen:"✓", purple:"✗", black:"✓", white:"✓", zebra:"✓", ddt:"✓" },
+  { dmg:"Plasma",    leads:"✓", frozen:"✓", purple:"✗", black:"✓", white:"✓", zebra:"✓", ddt:"✓" },
+  { dmg:"Glacier",   leads:"✓", frozen:"✓", purple:"✓", black:"✓", white:"✓", zebra:"✓", ddt:"✓" },
+  { dmg:"Shatter",   leads:"✓", frozen:"✓", purple:"✓", black:"✓", white:"✓", zebra:"✓", ddt:"✓" },
+  { dmg:"Normal",    leads:"✓", frozen:"✓", purple:"✓", black:"✓", white:"✓", zebra:"✓", ddt:"✓" }
+];
+
+/* ================== MODES ================== */
+const MODES = [
+  { k:"Easy — Standard",       cost:"×0.85", start:"$650",  lives:200, rounds:"1–40",  cashMod:"×1.00", notes:"Beginner difficulty, 85% tower prices. Grants Easy medal." },
+  { k:"Easy — Primary Only",   cost:"×0.85", start:"$650",  lives:200, rounds:"1–40",  cashMod:"×1.00", notes:"Only Primary towers allowed (no heroes from other cats)." },
+  { k:"Easy — Deflation",      cost:"×0.85", start:"$20,000 (fixed)", lives:200, rounds:"31–60", cashMod:"×0 (no income)", notes:"No farms, no pops, no drops. $20k one-shot budget. With Double Cash: $40,000 start." },
+  { k:"Medium — Standard",     cost:"×1.00", start:"$650",  lives:150, rounds:"1–60",  cashMod:"×1.00", notes:"Baseline difficulty. All towers, all heroes." },
+  { k:"Medium — Military Only",cost:"×1.00", start:"$650",  lives:150, rounds:"1–60",  cashMod:"×1.00", notes:"Military category only." },
+  { k:"Medium — Apopalypse",   cost:"×1.00", start:"$650",  lives:150, rounds:"1–100", cashMod:"×1.00", notes:"Bloons send continuously with no round break. Round-end bonus still paid per round passed." },
+  { k:"Medium — Reverse",      cost:"×1.00", start:"$650",  lives:150, rounds:"1–60",  cashMod:"×1.00", notes:"Track reversed — bloons enter from the usual exit." },
+  { k:"Hard — Standard",       cost:"×1.08", start:"$650",  lives:100, rounds:"3–80",  cashMod:"×1.00", notes:"Starts R3. +10% extra HP on all bloons and MOABs. Lives capped at 100." },
+  { k:"Hard — Magic Only",     cost:"×1.08", start:"$650",  lives:100, rounds:"3–80",  cashMod:"×1.00", notes:"Magic monkeys only." },
+  { k:"Hard — Double HP MOABs",cost:"×1.08", start:"$650",  lives:100, rounds:"3–80",  cashMod:"×1.00", notes:"All MOAB-class have 2× HP (stacks with Fortified for 4× total)." },
+  { k:"Hard — Half Cash",      cost:"×1.08", start:"$325",  lives:100, rounds:"3–80",  cashMod:"×0.50", notes:"All income halved (pops, farms, IMF, drops, abilities, Achimon, etc.). Start cash also halved." },
+  { k:"Hard — ABR",            cost:"×1.08", start:"$650",  lives:100, rounds:"3–80",  cashMod:"×1.00", notes:"Alternate Bloons Rounds — completely different round composition, much tougher." },
+  { k:"Hard — Impoppable",     cost:"×1.20", start:"$650",  lives:1,   rounds:"6–100", cashMod:"×1.00", notes:"1 life. 20% tower cost hike. MOABs gain Fortified HP. Abilities cooldown +10%." },
+  { k:"Hard — CHIMPS",         cost:"×1.20", start:"$650",  lives:1,   rounds:"6–100", cashMod:"pops only", notes:"No Continues / Hearts lost / Income (farms/abilities/drops) / Monkey Knowledge / Powers / Selling. Black Border medal." }
+];
+
+/* ================== ECON ================== */
+const ECONS = [
+  { k:"Cash per pop",          v:"$1 per layer/HP pop. Reduced after R50 (×0.5), R60 (×0.2), R85 (×0.1), R100 (×0.05), R120 (×0.02)." },
+  { k:"Round-end bonus",       v:"$100 + n (round number). Paid at round end on ALL modes incl. CHIMPS. Apopalypse pays retroactively per round passed." },
+  { k:"MOAB pop bonus",        v:"MOAB +$21 (1-hit $11/BAD variants). Full pop with children: MOAB $616, BFB $3160, ZOMG $16656, DDT $816, BAD $55760 (cumulative children included, pre-reduction)." },
+  { k:"Starting cash",         v:"Easy/Med/Hard/Impop: $650. Half Cash: $325. Deflation: $20,000. Double Cash: ×2 start. CHIMPS: $650." },
+  { k:"Difficulty cost mult.", v:"Easy ×0.85 · Medium ×1.00 · Hard ×1.08 · Impoppable/CHIMPS ×1.20. Applied to towers AND all upgrades, rounded to nearest $5." },
+  { k:"Half Cash",             v:"All income halved including farms, cash drops, IMF, Monkey-Nomics, Achimon, Supply Drop, Jungle's Bounty, etc." },
+  { k:"Double Cash (MK perk)", v:"Disabled in CHIMPS. Doubles all income + starting cash. Includes round bonus and ability-derived cash." },
+  { k:"Deflation",             v:"Fixed start, no income at all. No farms produce, no abilities give cash, no drops. $20k (×2 with DC → $40k) to complete 30 rounds." }
+];
+
+const ROUND_CASH = [
+  { r:1,  bloons:"20 Red",                 rbe:20,   cash:20,   notes:"Easiest." },
+  { r:3,  bloons:"25 Red + 5 Blue",        rbe:35,   cash:35,   notes:"Hard starts here." },
+  { r:6,  bloons:"40 Red + 20 Blue",       rbe:80,   cash:80,   notes:"Impoppable/CHIMPS start." },
+  { r:10, bloons:"Mixed Blue/Green",       rbe:139,  cash:139,  notes:"" },
+  { r:20, bloons:"40 Pink rush",           rbe:468,  cash:468,  notes:"Last round pre-Camo." },
+  { r:21, bloons:"First Camo (Green)",     rbe:270,  cash:270,  notes:"Need Camo detection." },
+  { r:28, bloons:"Ceramic rush",           rbe:1872, cash:1872, notes:"First Ceramics." },
+  { r:40, bloons:"First MOAB",             rbe:1232, cash:1232, notes:"First MOAB appears." },
+  { r:50, bloons:"Mega Ceramic waves",     rbe:8000, cash:4000, notes:"Cash ×0.5 from here." },
+  { r:60, bloons:"2 BFB + support",        rbe:6320, cash:1264, notes:"Easy end; cash ×0.2 now." },
+  { r:63, bloons:"First Fortified ZOMG",   rbe:33312,cash:6662, notes:"ZOMG doubled HP." },
+  { r:76, bloons:"DDT rush",               rbe:5712, cash:1142, notes:"Camo + Regrow + Lead." },
+  { r:78, bloons:"BFB + DDT spam",         rbe:9496, cash:1899, notes:"" },
+  { r:80, bloons:"First ZOMG (non-ABR)",   rbe:20112,cash:4022, notes:"Hard ends here." },
+  { r:85, bloons:"Mixed MOAB-class",       rbe:18000,cash:1800, notes:"Cash ×0.1 from here." },
+  { r:95, bloons:"Stacked DDT + BFB",      rbe:28000,cash:2800, notes:"" },
+  { r:98, bloons:"DDT swarm",              rbe:23000,cash:2300, notes:"Classic chokepoint round." },
+  { r:100,bloons:"BAD round",              rbe:78416,cash:3920, notes:"BAD appears. End of CHIMPS/Impoppable." }
+];
+
+/* ================== RENDER ================== */
+let activeCat='all', selected=null;
+function catCls(c){ return c==='Primary'?'cat-pri':c==='Military'?'cat-mil':c==='Magic'?'cat-mgc':'cat-sup'; }
+function r5(n){ return Math.round(n/5)*5; }
+function costs4(base){
+  return [
+    r5(base*0.85),
+    r5(base*1.00),
+    r5(base*1.08),
+    r5(base*1.20)
+  ];
+}
+function costStr(base){
+  const c = costs4(base);
+  return `<span class="dlabel">E</span><b>$${c[0].toLocaleString()}</b> <span class="dlabel">M</span><b>$${c[1].toLocaleString()}</b> <span class="dlabel">H</span><b>$${c[2].toLocaleString()}</b> <span class="dlabel">I</span><b>$${c[3].toLocaleString()}</b>`;
+}
+
+function renderTowers(){
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const list = TOWERS.filter(t=>{
+    if(activeCat!=='all' && t.cat!==activeCat) return false;
+    if(!q) return true;
+    if(t.name.toLowerCase().includes(q)) return true;
+    for(const p of t.paths) for(const u of p) if(u.n.toLowerCase().includes(q)) return true;
+    return false;
+  });
+  const grid = document.getElementById('tower-grid');
+  grid.innerHTML = list.map(t=>{
+    const c = costs4(t.cost);
+    return `
+    <div class="card ${selected===t.name?'sel':''}" data-n="${t.name}">
+      <div class="img">${imgTag(t.portrait, t.name)}</div>
+      <div class="body">
+        <div class="nm">${t.name}</div>
+        <div class="tag ${catCls(t.cat)}">${t.cat} · ${t.footprint}</div>
+        <div class="stat">
+          <div>MED <b>$${c[1].toLocaleString()}</b></div>
+          <div>DMG <b>${t.dmg}</b></div>
+          <div>PRC <b>${t.pierce}</b></div>
+          <div>ATK <b>${typeof t.atk==='number'?t.atk+'s':t.atk}</b></div>
+          <div>RNG <b>${t.range}</b></div>
+          <div>CAM <b>${t.camo?'✓':'—'}</b></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>openTower(c.dataset.n)));
+}
+
+function openTower(name){
+  selected=name;
+  const t=TOWERS.find(x=>x.name===name);
+  const d=document.getElementById('detail'); d.classList.add('on');
+  document.getElementById('d-img').innerHTML = imgTag(t.portrait, t.name);
+  document.getElementById('d-name').textContent = t.name;
+  document.getElementById('d-meta').innerHTML = `<span class="${catCls(t.cat)}">${t.cat}</span> · ${t.footprint} · attack cooldown ${typeof t.atk==='number'?t.atk+'s':t.atk} · projectile ${t.projSpd} · range ${t.range}`;
+  document.getElementById('d-stats').innerHTML = [
+    {l:'Base cost (M)',v:'$'+t.cost.toLocaleString()},
+    {l:'Damage',v:t.dmg},
+    {l:'Pierce',v:t.pierce},
+    {l:'Attack cool',v:typeof t.atk==='number'?t.atk+'s':t.atk},
+    {l:'Range',v:t.range},
+    {l:'Camo detect',v:t.camo?'Yes':'No'},
+    {l:'Pops Lead',v:t.lead?'Yes':'No'},
+    {l:'Pops Black',v:t.black?'Yes':'No'},
+    {l:'Pops Purple',v:t.purple?'Yes':'No'},
+    {l:'Hits MOAB',v:t.moab?'Yes':'No'}
+  ].map(s=>`<div class="stat-cell"><div class="l">${s.l}</div><div class="v">${s.v}</div></div>`).join('');
+
+  const c4 = costs4(t.cost);
+  document.getElementById('d-diff').innerHTML = [
+    ['Easy',c4[0]],['Medium',c4[1]],['Hard',c4[2]],['Impoppable',c4[3]]
+  ].map(([lbl,v])=>`<div><div class="dl">${lbl}</div><div class="dv">$${v.toLocaleString()}</div></div>`).join('');
+
+  const labels=['Path 1 — Top','Path 2 — Middle','Path 3 — Bottom'];
+  document.getElementById('d-paths').innerHTML = t.paths.map((p,pi)=>`
+    <div class="path">
+      <div class="path-h"><span class="p-lab">${labels[pi]}</span><span class="muted">T1 → T5</span></div>
+      ${p.map((u,i)=>`
+        <div class="up">
+          <div class="uimg">${imgTag(upgradeIconFile(u.n, u.img), u.n)}</div>
+          <div class="ubody">
+            <div class="uhead">
+              <div><span class="utier">T${i+1}</span><span class="un">${u.n}</span></div>
+            </div>
+            <div class="ucosts">${costStr(u.c)}</div>
+            <div class="ueff">${u.d}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  `).join('');
+
+  let html = `<b>Notes:</b> ${t.notes}`;
+  if(t.imm && t.imm.length) html += `<div class="imm"><b>Restrictions / immunities:</b> ${t.imm.join(' · ')}</div>`;
+  document.getElementById('d-notes').innerHTML = html;
+  renderTowers();
+}
+
+function closeDetail(){ document.getElementById('detail').classList.remove('on'); selected=null; renderTowers(); }
+
+document.querySelectorAll('.controls .chip[data-cat]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.chip[data-cat]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); activeCat=b.dataset.cat; renderTowers();
+}));
+document.getElementById('search').addEventListener('input', renderTowers);
+document.getElementById('close').addEventListener('click', closeDetail);
+
+document.querySelectorAll('#tabs .tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+t.dataset.tab).classList.add('on');
+}));
+
+/* --- Bloons tab --- */
+function pillsFor(props){
+  const map={camo:'Camo',regrow:'Regrow',fortified:'Fortified',explosive_immune:'No Explosive',ice_immune:'No Ice',sharp_immune:'No Sharp',magic_resist:'No Magic',moab:'MOAB',fortified_capable:'Fort-able',ability_immune:'Ability-immune',ddt:'DDT'};
+  return props.map(p=>{
+    const cls = (p==='camo'||p==='moab'||p==='regrow'||p==='fortified'||p==='lead'||p==='purple') ? p : 'fortified';
+    return `<span class="pill ${cls}">${map[p]||p}</span>`;
+  }).join(' ');
+}
+function renderBloons(){
+  document.getElementById('tbl-bloons').innerHTML = `
+    <thead><tr>
+      <th></th><th>Bloon</th><th class="n">RBE</th><th class="n">Layer HP</th><th class="n">Speed (u/s)</th><th class="n">×Red</th>
+      <th>Children</th><th class="n">Cash $</th><th>Properties</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${BLOONS.map(x=>`
+      <tr>
+        <td><span class="bimg">${imgTag(x.img,x.n)}</span></td>
+        <td><b>${x.n}</b></td>
+        <td class="n">${x.rbe}</td>
+        <td class="n">${x.hp}</td>
+        <td class="n">${x.speed}</td>
+        <td class="n">${x.mult}</td>
+        <td>${x.children}</td>
+        <td class="n">$${x.cash}</td>
+        <td>${pillsFor(x.props)}</td>
+        <td>${x.notes}</td>
+      </tr>`).join('')}</tbody>`;
+
+  document.getElementById('tbl-moabs').innerHTML = `
+    <thead><tr>
+      <th></th><th>MOAB</th><th class="n">RBE</th><th class="n">HP</th><th class="n">Speed</th><th class="n">×Red</th>
+      <th>Children</th><th class="n">Layer $</th><th class="n">1st R</th><th>Properties</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${MOABS.map(x=>`
+      <tr>
+        <td><span class="bimg">${imgTag(x.img,x.n)}</span></td>
+        <td><b>${x.n}</b></td>
+        <td class="n">${x.rbe.toLocaleString()}</td>
+        <td class="n">${x.hp.toLocaleString()}</td>
+        <td class="n">${x.speed}</td>
+        <td class="n">${x.mult}</td>
+        <td>${x.children}</td>
+        <td class="n">$${x.cash}</td>
+        <td class="n">R${x.firstR}</td>
+        <td>${pillsFor(x.props)}</td>
+        <td>${x.notes}</td>
+      </tr>`).join('')}</tbody>`;
+
+  document.getElementById('tbl-boss').innerHTML = `
+    <thead><tr><th></th><th>Boss</th><th>Tier range</th><th class="n">HP range</th><th>Notes</th></tr></thead>
+    <tbody>${BOSSES.map(x=>`
+      <tr>
+        <td><span class="bimg">${imgTag(x.img,x.n)}</span></td>
+        <td><b>${x.n}</b></td>
+        <td>${x.tier}</td>
+        <td class="n">${x.hp}</td>
+        <td>${x.notes}</td>
+      </tr>`).join('')}</tbody>`;
+}
+
+/* --- Props tab --- */
+function renderProps(){
+  document.getElementById('prop-cards').innerHTML = PROPS.map(x=>`
+    <div class="mcard">
+      <h4><span class="pill ${x.color}">${x.k}</span></h4>
+      <div class="mdesc">${x.desc}</div>
+      <div class="mrow" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd2)"><span>Counters</span><b style="text-align:right;max-width:60%">${x.countersShort}</b></div>
+    </div>`).join('');
+  document.getElementById('tbl-resist').innerHTML = `
+    <thead><tr><th>Damage type</th><th>Lead</th><th>Frozen</th><th>Purple</th><th>Black</th><th>White</th><th>Zebra</th><th>DDT</th></tr></thead>
+    <tbody>${RESIST.map(r=>`
+      <tr>
+        <td><b>${r.dmg}</b></td>
+        ${['leads','frozen','purple','black','white','zebra','ddt'].map(k=>`<td>${r[k]==='✓'?'<span class="pill yes">Yes</span>':'<span class="pill no">No</span>'}</td>`).join('')}
+      </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="8" style="color:var(--tx3);font-size:10px;padding:6px 8px">Cold/Ice cannot affect Lead without Metal Freeze. DDT immunities = Camo + Lead + Black (needs camo-detect + non-sharp).</td></tr></tfoot>`;
+}
+
+/* --- Modes tab --- */
+function renderModes(){
+  document.getElementById('mode-cards').innerHTML = MODES.map(m=>`
+    <div class="mcard">
+      <h4>${m.k}</h4>
+      <div class="mtag">${m.k.split(' — ')[0]}</div>
+      <div class="mrow"><span>Tower cost</span><b>${m.cost}</b></div>
+      <div class="mrow"><span>Starting cash</span><b>${m.start}</b></div>
+      <div class="mrow"><span>Lives</span><b>${m.lives}</b></div>
+      <div class="mrow"><span>Rounds</span><b>${m.rounds}</b></div>
+      <div class="mrow"><span>Cash modifier</span><b>${m.cashMod}</b></div>
+      <div class="mdesc">${m.notes}</div>
+    </div>`).join('');
+}
+
+/* --- Econ tab --- */
+function renderEcon(){
+  document.getElementById('econ-cards').innerHTML = ECONS.map(e=>`
+    <div class="mcard">
+      <h4>${e.k}</h4>
+      <div class="mdesc">${e.v}</div>
+    </div>`).join('');
+  document.getElementById('tbl-rounds').innerHTML = `
+    <thead><tr>
+      <th class="n">Round</th><th>Composition</th><th class="n">Approx RBE</th>
+      <th class="n">Cash (std)</th><th class="n">×0.5 Half</th><th class="n">×2 Double</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${ROUND_CASH.map(x=>`
+      <tr>
+        <td class="n"><b>${x.r}</b></td>
+        <td>${x.bloons}</td>
+        <td class="n">${x.rbe.toLocaleString()}</td>
+        <td class="n">$${x.cash.toLocaleString()}</td>
+        <td class="n">$${Math.floor(x.cash*0.5).toLocaleString()}</td>
+        <td class="n">$${(x.cash*2).toLocaleString()}</td>
+        <td>${x.notes}</td>
+      </tr>`).join('')}</tbody>`;
+  document.getElementById('tbl-modecash').innerHTML = `
+    <thead><tr><th>Mode</th><th class="n">Start</th><th class="n">Cash mult</th><th>Farms</th><th>Abilities $</th><th>Drops</th></tr></thead>
+    <tbody>
+      <tr><td>Standard</td><td class="n">$650</td><td class="n">×1.00</td><td><span class="pill yes">Yes</span></td><td><span class="pill yes">Yes</span></td><td><span class="pill yes">Yes</span></td></tr>
+      <tr><td>Half Cash</td><td class="n">$325</td><td class="n">×0.50</td><td><span class="pill yes">Halved</span></td><td><span class="pill yes">Halved</span></td><td><span class="pill yes">Halved</span></td></tr>
+      <tr><td>Double Cash (MK)</td><td class="n">$1,300</td><td class="n">×2.00</td><td><span class="pill yes">×2</span></td><td><span class="pill yes">×2</span></td><td><span class="pill yes">×2</span></td></tr>
+      <tr><td>Deflation</td><td class="n">$20,000</td><td class="n">×0</td><td><span class="pill no">Disabled</span></td><td><span class="pill no">No cash</span></td><td><span class="pill no">No</span></td></tr>
+      <tr><td>CHIMPS</td><td class="n">$650</td><td class="n">Pops only</td><td><span class="pill no">No</span></td><td><span class="pill no">No</span></td><td><span class="pill no">No</span></td></tr>
+      <tr><td>ABR</td><td class="n">$650</td><td class="n">×1.00</td><td><span class="pill yes">Yes</span></td><td><span class="pill yes">Yes</span></td><td><span class="pill yes">Yes</span></td></tr>
+      <tr><td>Apopalypse</td><td class="n">$650</td><td class="n">×1.00</td><td><span class="pill yes">Yes</span></td><td><span class="pill yes">Yes</span></td><td><span class="pill yes">Yes</span></td></tr>
+    </tbody>`;
+}
+
+/* --- Init --- */
+renderTowers(); renderBloons(); renderProps(); renderModes(); renderEcon();
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeDetail();
+  if(e.key==='/' && document.activeElement.tagName!=='INPUT'){
+    e.preventDefault(); document.getElementById('search').focus();
+  }
+});
+</script>
+</body>
+</html>
